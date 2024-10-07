@@ -195,9 +195,10 @@ def create_competitive_map(df):
                 y = 30 + (row * 45)
                 company_name = company['Company']
                 logo_url = company['Logo']
+                website_url = company['Website']
                 map_html += f"""
                 <div class="company-logo" style="left: {x}px; top: {y}px; background-image: url('{logo_url}');"
-                     onclick="selectCompany('{company_name}');" title="{company_name}">
+                     onclick="openWebsite('{website_url}', '{company_name}');" title="{company_name}">
                     <span class="company-name">{company_name}</span>
                 </div>
                 """
@@ -207,6 +208,14 @@ def create_competitive_map(df):
     map_html += """
     </div>
     <script>
+    function openWebsite(url, companyName) {
+        if (url) {
+            window.open(url, '_blank');
+        } else {
+            console.log("No website available for:", companyName);
+        }
+        selectCompany(companyName);
+    }
     function selectCompany(companyName) {
         console.log("Company selected:", companyName);
         window.parent.postMessage({type: 'company_selected', company: companyName}, '*');
