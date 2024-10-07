@@ -119,11 +119,11 @@ def create_competitive_map(df):
     # Add axis lines with arrow heads
     map_html += """
     <div class="axis-line" style="left: 50%; top: 5%; width: 1px; height: 90%;"></div>
-    <div class="arrow-head" style="left: 50%; top: 5%; transform: translateX(-50%) rotate(180deg); border-bottom: 10px solid #A9A9A9;"></div>
-    <div class="arrow-head" style="left: 50%; bottom: 5%; transform: translateX(-50%); border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="left: 50%; top: 5%; transform: translateX(-50%); border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="left: 50%; bottom: 5%; transform: translateX(-50%) rotate(180deg); border-bottom: 10px solid #A9A9A9;"></div>
     <div class="axis-line" style="left: 5%; top: 50%; width: 90%; height: 1px;"></div>
-    <div class="arrow-head" style="left: 5%; top: 50%; transform: translateY(-50%) rotate(90deg); border-bottom: 10px solid #A9A9A9;"></div>
-    <div class="arrow-head" style="right: 5%; top: 50%; transform: translateY(-50%) rotate(-90deg); border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="left: 5%; top: 50%; transform: translateY(-50%) rotate(-90deg); border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="right: 5%; top: 50%; transform: translateY(-50%) rotate(90deg); border-bottom: 10px solid #A9A9A9;"></div>
     """
 
     # Add axis labels
@@ -136,17 +136,17 @@ def create_competitive_map(df):
 
     # Add sub-labels with margin from axis
     sub_labels = [
-        ("Multi Tenancy", 50, 17),
-        ("Multi System", 50, 27),
-        ("System Flows", 50, 37),
-        ("Action Models", 50, 63),
-        ("Generic Task", 50, 83),
-        ("Generic Prompts", 17, 50),
-        ("My Data", 32, 50),
-        ("Customized Prompts", 47, 50),
-        ("My Tools", 62, 50),
-        ("Custom Flows", 77, 50),
-        ("Organization", 92, 50)
+        ("Multi Tenancy", 50.5, 17),
+        ("Multi System", 50.5, 27),
+        ("System Flows", 50.5, 37),
+        ("Action Models", 50.5, 63),
+        ("Generic Task", 50.5, 83),
+        ("Generic Prompts", 17, 51),
+        ("My Data", 32, 51),
+        ("Customized Prompts", 47, 51),
+        ("My Tools", 62, 51),
+        ("Custom Flows", 77, 51),
+        ("Organization", 92, 51)
     ]
     for label, x, y in sub_labels:
         map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
