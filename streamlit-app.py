@@ -185,7 +185,8 @@ def main():
             if (event.data.type === 'company_selected') {
                 const company = event.data.company;
                 console.log('Received company in parent:', company);
-                document.dispatchEvent(new CustomEvent('company_selected', {detail: company}));
+                document.getElementById('selected-company-input').value = company;
+                document.getElementById('update-button').click();
             }
         });
         </script>
@@ -193,11 +194,12 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Use a custom component to receive the selected company
-    selected_company = st.components.v1.declare_component("company_selector", path=None)
-    new_selection = selected_company()
+    # Hidden input and button to update selected company
+    selected_company = st.empty()
+    new_selection = selected_company.text_input("Selected Company", key="selected-company-input", label_visibility="hidden")
+    update_button = st.button("Update", key="update-button", style="display: none;")
 
-    if new_selection and new_selection != st.session_state.selected_company:
+    if update_button and new_selection != st.session_state.selected_company:
         st.session_state.selected_company = new_selection
         st.rerun()
 
