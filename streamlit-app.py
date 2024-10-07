@@ -103,7 +103,7 @@ def create_competitive_map(df):
         position: absolute;
         border: 1px solid #008080;
         border-radius: 15px;
-        padding: 5px 5px 0px;
+        padding: 5px 0px 0px;
     }
     .axis-line {
         position: absolute;
@@ -161,7 +161,7 @@ def create_competitive_map(df):
         "Enterprise Search": (25, 80),
         "Out of the Box Agents": (5, 80),
         "Vertical AI": (30, 60),
-        "UI Models": (60, 60),
+        "UI Models": (58, 60),
         "Reasoning Models": (60, 75),
         "DIY AI": (65, 30)
     }
