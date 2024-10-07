@@ -160,17 +160,18 @@ def create_competitive_map(df):
         "Enterprise Search": (15, 60),
         "Out of the Box Agents": (10, 85),
         "Vertical AI": (30, 70),
-        "UI Models": (60, 6),
+        "UI Models": (60, 60),
         "Reasoning Models": (60, 85),
         "DIY AI": (60, 25)
     }
 
     for bucket, (bucket_x, bucket_y) in bucket_positions.items():
-        company_count = bucket_counts.get(bucket, 0)
+        bucket_companies = df[df['bucket'] == bucket]
+        company_count = len(bucket_companies)
         
         # Calculate bucket size based on company count
         cols = 4
-        rows = max(3, math.ceil(company_count / cols))  # Default to 3 rows minimum
+        rows = math.ceil(company_count / cols)
         width = cols * 45 + 20  # 45px per logo, 20px padding
         height = rows * 55 + 30  # 55px per row (including margin), 30px padding for label
 
@@ -179,28 +180,20 @@ def create_competitive_map(df):
             <div class="bucket-label">{bucket} ({company_count})</div>
         """
         
-        bucket_companies = df[df['bucket'] == bucket]
-        for i in range(rows * cols):
+        for i, company in bucket_companies.iterrows():
             row = i // cols
             col = i % cols
             x = 10 + (col * 45)
-            y = 25 + (row * 55)  # Increased vertical spacing
+            y = 25 + (row * 55)
             
-            if i < len(bucket_companies):
-                company = bucket_companies.iloc[i]
-                company_name = company['Company']
-                logo_url = company['Logo']
-                map_html += f"""
-                <div class="company-logo" style="left: {x}px; top: {y}px; background-image: url('{logo_url}');"
-                     onclick="selectCompany('{company_name}');" title="{company_name}">
-                    <span class="company-name">{company_name}</span>
-                </div>
-                """
-            else:
-                # Add empty placeholder for uniform grid
-                map_html += f"""
-                <div class="company-logo" style="left: {x}px; top: {y}px; background-image: none;"></div>
-                """
+            company_name = company['Company']
+            logo_url = company['Logo']
+            map_html += f"""
+            <div class="company-logo" style="left: {x}px; top: {y}px; background-image: url('{logo_url}');"
+                 onclick="selectCompany('{company_name}');" title="{company_name}">
+                <span class="company-name">{company_name}</span>
+            </div>
+            """
         
         map_html += "</div>"
 
