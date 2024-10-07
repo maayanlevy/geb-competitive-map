@@ -159,10 +159,15 @@ def create_competitive_map(df):
         company_count = bucket_counts.get(bucket, 0)
         
         # Calculate bucket size based on company count
-        cols = min(3, company_count)
-        rows = math.ceil(company_count / cols)
-        width = max(cols * 60 + 20, 120)  # 60px per logo, 20px padding
-        height = rows * 60 + 40  # 60px per logo, 40px padding for label
+        if company_count > 0:
+            cols = min(3, company_count)
+            rows = math.ceil(company_count / cols)
+            width = max(cols * 60 + 20, 120)  # 60px per logo, 20px padding
+            height = rows * 60 + 40  # 60px per logo, 40px padding for label
+        else:
+            # Default size for empty buckets
+            width = 120
+            height = 60
 
         map_html += f"""
         <div class="bucket-area" style="left: {bucket_x}%; top: {bucket_y}%; width: {width}px; height: {height}px;">
@@ -171,6 +176,7 @@ def create_competitive_map(df):
         
         bucket_companies = df[df['bucket'] == bucket]
         if company_count > 0:
+            cols = min(3, company_count)
             for i, (_, company) in enumerate(bucket_companies.iterrows()):
                 row = i // cols
                 col = i % cols
