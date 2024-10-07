@@ -164,7 +164,7 @@ def create_competitive_map(df):
         "Vertical AI": (30, 60),
         "UI Models": (60, 60),
         "Reasoning Models": (60, 75),
-        "DIY AI": (70, 30)
+        "DIY AI": (65, 30)
     }
 
     for bucket, (bucket_x, bucket_y) in bucket_positions.items():
