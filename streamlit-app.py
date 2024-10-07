@@ -181,55 +181,28 @@ def create_competitive_map(df):
     <script>
     function selectCompany(companyName) {
         console.log("selectCompany called with:", companyName);
-        const data = {
-            company: companyName
-        };
-        fetch("/_stcore/stream", {
-            method: "POST",
-            body: JSON.stringify(data),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }).then(response => console.log("Fetch response:", response))
-          .catch(error => console.error("Fetch error:", error));
+        Streamlit.setComponentValue(companyName);
     }
     </script>
     """
     return map_html
 
+import streamlit.components.v1 as components
+
 def handle_custom_events():
-    custom_events = components.v1.html(
-        """
-        <script>
-        const doc = window.parent.document;
-        console.log("Custom events script loaded");
-        const observer = new MutationObserver(() => {
-            console.log("Mutation observed");
-            const customEventsElement = doc.querySelector('#custom-events');
-            if (customEventsElement) {
-                const data = JSON.parse(customEventsElement.textContent);
-                console.log("Parsed data:", data);
-                if (data && data.company) {
-                    console.log("Setting component value:", data.company);
-                    Streamlit.setComponentValue(data.company);
-                }
-            } else {
-                console.log("Custom events element not found");
-            }
-        });
-        const customEventsElement = doc.querySelector('#custom-events');
-        if (customEventsElement) {
-            observer.observe(customEventsElement, {childList: true});
-            console.log("Observer set up");
-        } else {
-            console.log("Custom events element not found for observer setup");
-        }
-        </script>
-        <div id="custom-events"></div>
-        """,
-        height=0,
+    component_value = components.declare_component(
+        "custom_events",
+        path=None,
     )
-    return custom_events if custom_events is not None else "No events"
+    
+    custom_component = component_value(key="custom_events")
+    return custom_component
+
+# In the main() function, replace the existing handle_custom_events() call with:
+selected_company = handle_custom_events()
+if selected_company:
+    st.session_state.selected_company = selected_company
+    st.rerun()
 
 # Main Streamlit app
 def main():
@@ -251,18 +224,11 @@ def main():
     st.components.v1.html(map_html, height=650, scrolling=True)
 
     # Handle custom events
-    custom_events = handle_custom_events()
-    st.write("Debug - custom_events type:", type(custom_events))
-    st.write("Debug - custom_events value:", str(custom_events))
+    selected_company = handle_custom_events()
+    st.write("Debug - selected_company:", selected_company)
 
-    if custom_events is not None:
-        st.session_state.selected_company = str(custom_events)
-        st.write("Debug - Updated selected_company:", st.session_state.selected_company)
-
-    # Check if selected company has changed
-    if st.session_state.selected_company != st.session_state.get('_last_selected_company'):
-        st.write("Debug - Company selection changed")
-        st.session_state['_last_selected_company'] = st.session_state.selected_company
+    if selected_company:
+        st.session_state.selected_company = selected_company
         st.rerun()
 
     # Company details section
@@ -296,11 +262,6 @@ def main():
             st.error("The 'Company' column is missing in the data.")
     else:
         st.write("Click on a company logo to see its details.")
-
-    # Add custom event handling
-    custom_events = handle_custom_events()
-    if custom_events:
-        st.session_state.selected_company = custom_events
 
 if __name__ == "__main__":
     main()
