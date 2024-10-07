@@ -200,6 +200,7 @@ def setup_custom_event_listener():
         window.parent.document.addEventListener('company-selected', function(event) {
             eventCatcher.textContent = event.detail;
             console.log("Company selected:", event.detail);
+            window.parent.Streamlit.setComponentValue(event.detail);
         });
         </script>
         """,
@@ -230,7 +231,7 @@ def main():
     event_placeholder = setup_custom_event_listener()
 
     # Check for selected company
-    selected_company = event_placeholder.markdown.kwargs['body'].split('>')[1].split('<')[0]
+    selected_company = st.components.v1.declare_component("custom_events", path=None)()
     if selected_company and selected_company != st.session_state.selected_company:
         st.session_state.selected_company = selected_company
         st.rerun()
@@ -266,6 +267,9 @@ def main():
             st.error("The 'Company' column is missing in the data.")
     else:
         st.write("Click on a company logo to see its details.")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
