@@ -7,6 +7,7 @@ from googleapiclient.errors import HttpError
 import streamlit.components as components
 import base64
 import math
+import random
 
 # Configure Streamlit page
 st.set_page_config(layout="wide", page_title="Competitive Map")
@@ -223,10 +224,12 @@ def main():
     st.title("Competitive Map")
 
     # Initialize session state
-    if 'selected_company' not in st.session_state:
-        st.session_state.selected_company = None
     if 'df' not in st.session_state:
         st.session_state.df = None
+    if 'editor_key' not in st.session_state:
+        st.session_state.editor_key = random.randint(0, 100000)
+    if 'selected_company' not in st.session_state:
+        st.session_state.selected_company = None
 
     # Add a refresh button
     if st.button("Refresh Data"):
@@ -236,6 +239,7 @@ def main():
     if st.session_state.df is None:
         with st.spinner("Fetching data..."):
             st.session_state.df = fetch_data()
+            st.session_state.df['select'] = False
 
     df = st.session_state.df
 
@@ -248,57 +252,47 @@ def main():
         non_ignored_companies = df[df['bucket'].str.lower() != 'ignore']
     else:
         non_ignored_companies = df
-    
-    # Select the first non-ignored company by default
-    if st.session_state.selected_company is None and not non_ignored_companies.empty:
-        st.session_state.selected_company = non_ignored_companies.iloc[0]['Company']
 
     # Create and display the competitive map
     st.subheader("Competitive Map")
     map_html = create_competitive_map(non_ignored_companies)
     st.components.v1.html(map_html, height=650, scrolling=False)
 
-    # Add JavaScript to handle messages from the iframe
-    st.markdown(
-        """
-        <script>
-        window.addEventListener('message', function(event) {
-            if (event.data.type === 'company_selected') {
-                const company = event.data.company;
-                console.log('Received company in parent:', company);
-                document.getElementById('selected-company-input').value = company;
-                document.getElementById('update-button').click();
-            }
-        });
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Hidden input and button to update selected company
-    selected_company = st.empty()
-    new_selection = selected_company.text_input("Selected Company", key="selected-company-input", label_visibility="hidden")
-    
-    # Hide the update button using CSS
-    st.markdown("""
-        <style>
-        #update-button {
-            display: none;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-    
-    update_button = st.button("Update", key="update-button")
-
-    if update_button and new_selection != st.session_state.selected_company:
-        st.session_state.selected_company = new_selection
+    # Function to handle company selection
+    def select_company():
+        key = st.session_state.editor_key
+        selected_rows = st.session_state[key]['edited_rows']
+        selected_rows = [int(row) for row in selected_rows if selected_rows[row]['select']]
+        try:
+            last_row = selected_rows[-1]
+            st.session_state.selected_company = df.iloc[last_row]['Company']
+        except IndexError:
+            pass
+        df['select'] = False
+        st.session_state.editor_key = random.randint(0, 100000)
         st.rerun()
+
+    # Create a data editor for company selection
+    st.data_editor(
+        df[['Company', 'select']],
+        key=st.session_state.editor_key,
+        hide_index=True,
+        column_config={
+            "select": st.column_config.CheckboxColumn(
+                "Select",
+                help="Select to view company details",
+                default=False,
+            )
+        },
+        disabled=['Company'],
+        on_change=select_company
+    )
 
     # Company details section
     st.subheader("Company Details")
     if st.session_state.selected_company:
         company_name = st.session_state.selected_company
-        company_row = df[df['Company'].str.strip().str.lower() == company_name.strip().lower()]
+        company_row = df[df['Company'] == company_name]
         
         if not company_row.empty:
             company_data = company_row.iloc[0]
