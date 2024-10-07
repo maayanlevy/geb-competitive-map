@@ -32,13 +32,10 @@ def fetch_data():
 
 # Function to create company card
 def create_company_card(company_data):
-    company_encoded = urllib.parse.quote(company_data['Company'])
     return f"""
-    <div class="company-card">
-        <a href="?selected_company={company_encoded}" target="_parent">
-            <img src="{company_data['Logo']}" alt="{company_data['Company']} logo">
-            <p>{company_data['Company']}</p>
-        </a>
+    <div class="company-card" onclick="selectCompany('{company_data['Company']}')">
+        <img src="{company_data['Logo']}" alt="{company_data['Company']} logo">
+        <p>{company_data['Company']}</p>
     </div>
     """
 
@@ -176,6 +173,11 @@ def create_competitive_map(df):
         <div class="axis-label x-label-right">My processes</div>
         <div class="axis-label y-label-top">Model reasoning</div>
         <div class="axis-label y-label-bottom">My reasoning</div>
+    <script>
+    function selectCompany(companyName) {
+        window.parent.postMessage({type: 'company_selected', company: companyName}, '*');
+    }
+    </script>
     </div>
     """
     return map_html
@@ -183,6 +185,10 @@ def create_competitive_map(df):
 # Main Streamlit app
 def main():
     st.title("Competitive Map")
+
+    # Initialize session state
+    if 'selected_company' not in st.session_state:
+        st.session_state.selected_company = None
 
     # Fetch data
     df = fetch_data()
@@ -195,28 +201,33 @@ def main():
     map_html = create_competitive_map(df)
     st.components.v1.html(map_html, height=650)
 
-    # Retrieve selected company from query parameters
-    query_params = st.experimental_get_query_params()
-    company_name_encoded = query_params.get('selected_company', [None])[0]
-    company_name = urllib.parse.unquote(company_name_encoded) if company_name_encoded else None
+    # JavaScript to handle company selection
+    st.components.v1.html("""
+    <script>
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'company_selected') {
+            window.parent.postMessage({type: 'streamlit:setComponentValue', value: event.data.company}, '*');
+        }
+    }, false);
+    </script>
+    """)
+
+    # Update session state when a company is selected
+    selected_company = st.experimental_get_query_params().get('selected_company', [None])[0]
+    if selected_company:
+        st.session_state.selected_company = selected_company
 
     # Company details section
     st.subheader("Company Details")
     
-    # Create two columns
-    col1, col2 = st.columns([1, 2])
-
-    if company_name:
-        # Get the company data
+    if st.session_state.selected_company:
+        company_name = st.session_state.selected_company
         company_row = df[df['Company'] == company_name]
         if not company_row.empty:
             company_data = company_row.iloc[0]
-
-            # Display logo in the first column
+            col1, col2 = st.columns([1, 2])
             with col1:
                 st.image(company_data['Logo'], width=100)
-
-            # Display company details in the second column
             with col2:
                 st.write(f"**Company:** {company_name}")
                 st.write(f"**Description:** {company_data['description']}")
