@@ -195,6 +195,25 @@ def create_competitive_map(df):
     """
     return map_html
 
+def handle_custom_events():
+    custom_events = components.v1.html(
+        """
+        <script>
+        const doc = window.parent.document;
+        const observer = new MutationObserver(() => {
+            const data = JSON.parse(doc.querySelector('#custom-events').textContent);
+            if (data && data.company) {
+                Streamlit.setComponentValue(data.company);
+            }
+        });
+        observer.observe(doc.querySelector('#custom-events'), {childList: true});
+        </script>
+        <div id="custom-events"></div>
+        """,
+        height=0,
+    )
+    return custom_events
+
 # Main Streamlit app
 def main():
     st.title("Competitive Map")
