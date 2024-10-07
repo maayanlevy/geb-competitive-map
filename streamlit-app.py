@@ -31,7 +31,7 @@ def fetch_data():
 def create_company_card(company_data):
     return f"""
     <div class="company-card" onclick="showDetails('{company_data['Company']}')">
-        <img src="{company_data['Logo']}" alt="{company_data['Company']} logo" style="width:50px; height:50px; object-fit:contain;">
+        <img src="{company_data['Logo']}" alt="{company_data['Company']} logo">
         <p>{company_data['Company']}</p>
     </div>
     """
@@ -55,16 +55,35 @@ def create_competitive_map(df):
             flex: 1;
             border: 1px solid #ddd;
             padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .category-box {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .companies-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
             overflow-y: auto;
         }
         .company-card {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+            width: 100px;
+            text-align: center;
+            margin: 5px;
             cursor: pointer;
         }
         .company-card img {
-            margin-right: 10px;
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+        .company-card p {
+            margin: 5px 0;
+            font-size: 12px;
         }
     </style>
     <div class="map-container">
@@ -75,10 +94,17 @@ def create_competitive_map(df):
         for j in range(2):
             bucket = buckets[i+j]
             bucket_data = df[df['bucket'] == bucket]
-            map_html += f'<div class="quadrant"><h3>{bucket}</h3>'
+            map_html += f'''
+            <div class="quadrant">
+                <h3>{bucket}</h3>
+                <div class="category-box">
+                    <h4>Category: {bucket}</h4>
+                </div>
+                <div class="companies-container">
+            '''
             for _, company in bucket_data.iterrows():
                 map_html += create_company_card(company)
-            map_html += '</div>'
+            map_html += '</div></div>'
         map_html += '</div>'
     
     map_html += """
@@ -122,8 +148,12 @@ def main():
     """)
 
     # Handle company selection
-    if selected_company:
-        company_data = df[df['Company'] == selected_company].iloc[0]
+    if 'selected_company' not in st.session_state:
+        st.session_state.selected_company = None
+
+    company_name = st.session_state.get('selected_company')
+    if company_name:
+        company_data = df[df['Company'] == company_name].iloc[0]
         st.write(f"**Description:** {company_data['description']}")
         st.write(f"**Location:** {company_data['Location']}")
         st.write(f"**Employees:** {company_data['Employees']}")
