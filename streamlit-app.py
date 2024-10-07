@@ -43,16 +43,18 @@ def create_competitive_map(df):
         position: relative;
         width: 100%;
         height: 600px;
-        background-color: #f0f0f0;
+        background-color: #ffffff;
         border: 1px solid #ccc;
+        font-family: Arial, sans-serif;
     }
     .company-logo {
         position: absolute;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background-size: cover;
-        background-position: center;
+        padding: 5px 10px;
+        background-color: #ffffff;
+        border: 1px solid #008080;
+        border-radius: 5px;
+        font-size: 12px;
+        color: #008080;
         cursor: pointer;
         transition: transform 0.2s;
     }
@@ -62,12 +64,17 @@ def create_competitive_map(df):
     .axis-label {
         position: absolute;
         font-weight: bold;
+        color: #FFA500;
     }
-    .group-label {
+    .sub-label {
         position: absolute;
-        font-weight: bold;
-        font-size: 14px;
-        color: #555;
+        font-size: 12px;
+        color: #FFA500;
+    }
+    .main-label {
+        position: absolute;
+        font-size: 16px;
+        color: #A9A9A9;
     }
     </style>
     <div class="competitive-map">
@@ -75,31 +82,45 @@ def create_competitive_map(df):
 
     # Add axis labels
     map_html += """
-    <div class="axis-label" style="top: 10px; left: 50%;">Customized</div>
-    <div class="axis-label" style="bottom: 10px; left: 50%;">Zero-shot</div>
-    <div class="axis-label" style="top: 50%; left: 10px; transform: rotate(-90deg);">Models</div>
-    <div class="axis-label" style="top: 50%; right: 10px; transform: rotate(90deg);">DIY</div>
+    <div class="axis-label" style="top: 10px; left: 50%; transform: translateX(-50%);">Custom Reasoning</div>
+    <div class="axis-label" style="bottom: 10px; left: 50%; transform: translateX(-50%);">Model Reasoning</div>
+    <div class="axis-label" style="top: 50%; left: 10px; transform: rotate(-90deg) translateY(-50%);">Generic Processes</div>
+    <div class="axis-label" style="top: 50%; right: 10px; transform: rotate(90deg) translateY(-50%);">My Processes</div>
     """
 
-    # Add group labels
-    groups = [
-        ("Zero Reasoning", 50, 90),
-        ("DIY Reasoning", 90, 50),
-        ("Customized reasoning", 50, 10),
-        ("Reasoning Models", 10, 50)
+    # Add sub-labels
+    sub_labels = [
+        ("Multi Tenancy", 50, 15),
+        ("Multi System", 50, 25),
+        ("System Flows", 50, 35),
+        ("Action Models", 50, 65),
+        ("Generic Task", 50, 85),
+        ("Generic Prompts", 15, 50),
+        ("My Data", 30, 50),
+        ("Customized Prompts", 45, 50),
+        ("My Tools", 60, 50),
+        ("Custom Flows", 75, 50),
+        ("Organization", 90, 50)
     ]
-    for group, x, y in groups:
-        map_html += f'<div class="group-label" style="left: {x}%; top: {y}%;">{group}</div>'
+    for label, x, y in sub_labels:
+        map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
+
+    # Add main labels
+    main_labels = [
+        ("Generic Processes", 5, 95),
+        ("My Processes", 85, 95)
+    ]
+    for label, x, y in main_labels:
+        map_html += f'<div class="main-label" style="left: {x}%; top: {y}%;">{label}</div>'
 
     # Add company logos
     for _, company in df.iterrows():
         x = company.get('x', 50)  # Default to center if not specified
         y = company.get('y', 50)  # Default to center if not specified
-        logo_url = company['Logo']
         company_name = company['Company']
         map_html += f"""
-        <div class="company-logo" style="left: {x}%; top: {y}%; background-image: url('{logo_url}');"
-             onclick="selectCompany('{company_name}');" title="{company_name}"></div>
+        <div class="company-logo" style="left: {x}%; top: {y}%;"
+             onclick="selectCompany('{company_name}');" title="{company_name}">{company_name}</div>
         """
 
     map_html += """
@@ -140,6 +161,13 @@ def main():
     if df.empty:
         st.warning("No data available. Please check your Google Sheets connection.")
         return
+
+    # Select the first non-ignored company by default
+    if st.session_state.selected_company is None:
+        # Assuming 'Ignore' column exists and is boolean (True for ignored companies)
+        non_ignored_companies = df[df['Ignore'] != True]
+        if not non_ignored_companies.empty:
+            st.session_state.selected_company = non_ignored_companies.iloc[0]['Company']
 
     # Create and display the competitive map
     st.subheader("Competitive Map")
@@ -194,7 +222,7 @@ def main():
         else:
             st.warning("Company details not found.")
     else:
-        st.write("Click on a company logo to see its details.")
+        st.write("No company selected or all companies are ignored.")
 
 if __name__ == "__main__":
     main()
