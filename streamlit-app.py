@@ -32,8 +32,9 @@ def fetch_data():
 
 # Function to create company card
 def create_company_card(company_data):
+    company_name = company_data['Company'].replace("'", "\\'")
     return f"""
-    <div class="company-card" onclick="selectCompany('{company_data['Company']}')">
+    <div class="company-card" onclick="selectCompany('{company_name}')">
         <img src="{company_data['Logo']}" alt="{company_data['Company']} logo">
         <p>{company_data['Company']}</p>
     </div>
@@ -65,7 +66,7 @@ def create_competitive_map(df):
         .companies-container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: space-around;
+            justify-content: flex-start;
             overflow-y: auto;
         }
         .company-card {
@@ -84,6 +85,7 @@ def create_competitive_map(df):
             margin: 5px 0;
             font-size: 12px;
         }
+        /* Axis styles */
         .axis {
             position: absolute;
             background-color: #000;
@@ -114,8 +116,8 @@ def create_competitive_map(df):
             transform: translateY(-50%);
         }
         .y-arrow {
-            border-width: 0 5px 10px 5px;
-            border-color: transparent transparent #000 transparent;
+            border-width: 10px 5px 0 5px;
+            border-color: #000 transparent transparent transparent;
             left: 50%;
             top: 0;
             transform: translateX(-50%);
@@ -126,28 +128,27 @@ def create_competitive_map(df):
         }
         .x-label-left {
             left: 10px;
-            top: 50%;
+            top: 52%;
             transform: translateY(-50%);
         }
         .x-label-right {
             right: 10px;
-            top: 50%;
+            top: 52%;
             transform: translateY(-50%);
         }
         .y-label-top {
             top: 10px;
-            left: 50%;
+            left: 52%;
             transform: translateX(-50%);
         }
         .y-label-bottom {
             bottom: 10px;
-            left: 50%;
+            left: 52%;
             transform: translateX(-50%);
         }
     </style>
     <div class="map-container">
     """
-
     for i in range(0, 4, 2):
         map_html += '<div class="row">'
         for j in range(2):
@@ -164,6 +165,7 @@ def create_competitive_map(df):
                 map_html += '</div></div>'
         map_html += '</div>'
 
+    # Add axes and labels
     map_html += """
         <div class="axis x-axis"></div>
         <div class="axis y-axis"></div>
@@ -173,12 +175,12 @@ def create_competitive_map(df):
         <div class="axis-label x-label-right">My processes</div>
         <div class="axis-label y-label-top">Model reasoning</div>
         <div class="axis-label y-label-bottom">My reasoning</div>
+    </div>
     <script>
     function selectCompany(companyName) {
-        window.parent.postMessage({type: 'company_selected', company: companyName}, '*');
+        Streamlit.setComponentValue(companyName);
     }
     </script>
-    </div>
     """
     return map_html
 
@@ -197,53 +199,41 @@ def main():
         st.warning("No data available. Please check your Google Sheets connection.")
         return
 
-    # Create and display the competitive map
+    # Create and display the competitive map, capturing the selected company
     map_html = create_competitive_map(df)
-    st.components.v1.html(map_html, height=650)
+    selected_company = st.components.v1.html(map_html, height=650, scrolling=True)
 
-    # JavaScript to handle company selection
-    st.components.v1.html("""
-    <script>
-    window.addEventListener('message', function(event) {
-        if (event.data.type === 'company_selected') {
-            window.parent.postMessage({type: 'streamlit:setComponentValue', value: event.data.company}, '*');
-        }
-    }, false);
-    </script>
-    """)
-
-    # Update session state when a company is selected
-    selected_company = st.experimental_get_query_params().get('selected_company', [None])[0]
+    # Update session state if a company was selected
     if selected_company:
         st.session_state.selected_company = selected_company
 
     # Company details section
     st.subheader("Company Details")
-    
+
     if st.session_state.selected_company:
         company_name = st.session_state.selected_company
         company_row = df[df['Company'] == company_name]
         if not company_row.empty:
             company_data = company_row.iloc[0]
-            col1, col2 = st.columns([1, 2])
+
+            # Display logo and company details
+            col1, col2 = st.columns([1, 3])
             with col1:
                 st.image(company_data['Logo'], width=100)
             with col2:
-                st.write(f"**Company:** {company_name}")
-                st.write(f"**Description:** {company_data['description']}")
-                st.write(f"**Location:** {company_data['Location']}")
-                st.write(f"**Employees:** {company_data['Employees']}")
-                st.write(f"**Stage:** {company_data['Stage']}")
-                st.write(f"**Website:** [{company_data['Website']}]({company_data['Website']})")
-                st.write(f"**Investors:** {company_data['Investors']}")
-                st.write(f"**Comments:** {company_data['Comments']}")
+                st.markdown(f"**Company:** {company_name}")
+                st.markdown(f"**Description:** {company_data.get('description', 'N/A')}")
+                st.markdown(f"**Location:** {company_data.get('Location', 'N/A')}")
+                st.markdown(f"**Employees:** {company_data.get('Employees', 'N/A')}")
+                st.markdown(f"**Stage:** {company_data.get('Stage', 'N/A')}")
+                st.markdown(f"**Website:** [{company_data.get('Website', '')}]({company_data.get('Website', '')})")
+                st.markdown(f"**Investors:** {company_data.get('Investors', 'N/A')}")
+                st.markdown(f"**Comments:** {company_data.get('Comments', 'N/A')}")
+
         else:
             st.warning("Company details not found.")
     else:
         st.write("Click on a company logo to see its details.")
-
-    # Clear the query parameters after displaying the details
-    st.experimental_set_query_params()
 
 if __name__ == "__main__":
     main()
