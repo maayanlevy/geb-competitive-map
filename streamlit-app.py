@@ -181,7 +181,7 @@ def create_competitive_map(df):
     <script>
     function selectCompany(companyName) {
         console.log("selectCompany called with:", companyName);
-        window.parent.postMessage({type: "company_selected", company: companyName}, "*");
+        window.parent.postMessage({type: 'company_selected', company: companyName}, '*');
     }
     </script>
     """
@@ -225,9 +225,8 @@ def main():
         window.addEventListener('message', function(event) {
             if (event.data.type === 'company_selected') {
                 const company = event.data.company;
-                console.log('Received company:', company);
-                document.getElementById('selected-company-input').value = company;
-                document.getElementById('update-button').click();
+                console.log('Received company in parent:', company);
+                window.Streamlit.setComponentValue(company);
             }
         });
         </script>
@@ -235,23 +234,13 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Hidden input and button to update selected company
-    selected_company = st.empty()
-    new_selection = selected_company.text_input("Selected Company", key="selected-company-input", label_visibility="hidden")
-    
-    # Hide the update button using CSS
-    st.markdown("""
-        <style>
-        #update-button {
-            display: none;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-    
-    update_button = st.button("Update", key="update-button")
+    # Use a custom component to receive the selected company
+    selected_company = st.components.v1.declare_component("company_selector", path=None)
+    new_selection = selected_company()
 
-    if update_button and new_selection != st.session_state.selected_company:
+    if new_selection and new_selection != st.session_state.selected_company:
         st.session_state.selected_company = new_selection
+        st.rerun()
 
     # Company details section
     st.subheader("Company Details")
