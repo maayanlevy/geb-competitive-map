@@ -96,7 +96,8 @@ def create_competitive_map(df):
         font-size: 14px;
         color: #008080;
         font-weight: normal;
-        margin:0 auto;
+        width: 100%;
+        text-align: center;
     }
     .bucket-area {
         position: absolute;
