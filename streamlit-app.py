@@ -181,32 +181,13 @@ def create_competitive_map(df):
     <script>
     function selectCompany(companyName) {
         console.log("selectCompany called with:", companyName);
-        const event = new CustomEvent('company-selected', { detail: companyName });
-        window.parent.document.dispatchEvent(event);
+        window.parent.postMessage({type: "company_selected", company: companyName}, "*");
     }
     </script>
     """
     return map_html
 
 import streamlit.components.v1 as components
-
-def setup_custom_event_listener():
-    event_placeholder = st.empty()
-    event_placeholder.markdown(
-        """
-        <div id="event-catcher"></div>
-        <script>
-        const eventCatcher = window.parent.document.getElementById('event-catcher');
-        window.parent.document.addEventListener('company-selected', function(event) {
-            eventCatcher.textContent = event.detail;
-            console.log("Company selected:", event.detail);
-            window.parent.Streamlit.setComponentValue(event.detail);
-        });
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
-    return event_placeholder
 
 # Main Streamlit app
 def main():
@@ -227,12 +208,30 @@ def main():
     map_html = create_competitive_map(df)
     st.components.v1.html(map_html, height=650, scrolling=True)
 
-    # Setup custom event listener
-    event_placeholder = setup_custom_event_listener()
+    # Add a hidden component to receive messages from JavaScript
+    selected_company = st.empty()
+
+    # Add JavaScript to handle messages
+    st.markdown(
+        """
+        <script>
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'company_selected') {
+                const company = event.data.company;
+                console.log('Received company:', company);
+                const element = window.parent.document.querySelector('iframe[src*="streamlit_component"]');
+                if (element) {
+                    element.contentWindow.postMessage({company: company}, '*');
+                }
+            }
+        });
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
 
     # Check for selected company
-    selected_company = st.components.v1.declare_component("custom_events", path=None)()
-    if selected_company and selected_company != st.session_state.selected_company:
+    if selected_company:
         st.session_state.selected_company = selected_company
         st.rerun()
 
@@ -267,9 +266,6 @@ def main():
             st.error("The 'Company' column is missing in the data.")
     else:
         st.write("Click on a company logo to see its details.")
-
-if __name__ == "__main__":
-    main()
 
 if __name__ == "__main__":
     main()
