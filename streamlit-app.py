@@ -229,7 +229,7 @@ def handle_custom_events():
         """,
         height=0,
     )
-    return custom_events
+    return custom_events if custom_events is not None else "No events"
 
 # Main Streamlit app
 def main():
@@ -252,10 +252,11 @@ def main():
 
     # Handle custom events
     custom_events = handle_custom_events()
-    st.write("Debug - custom_events:", custom_events)
+    st.write("Debug - custom_events type:", type(custom_events))
+    st.write("Debug - custom_events value:", str(custom_events))
 
-    if custom_events:
-        st.session_state.selected_company = custom_events
+    if custom_events is not None:
+        st.session_state.selected_company = str(custom_events)
         st.write("Debug - Updated selected_company:", st.session_state.selected_company)
 
     # Check if selected company has changed
