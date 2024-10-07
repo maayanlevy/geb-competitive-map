@@ -38,7 +38,6 @@ def fetch_data():
         st.error(f"An error occurred: {err}")
         return pd.DataFrame()
 
-
 def create_competitive_map(df):
     map_html = """
     <style>
@@ -216,9 +215,6 @@ def create_competitive_map(df):
     """
     return map_html
 
-def select_company(company_name):
-    st.session_state.selected_company = company_name
-
 # Main Streamlit app
 def main():
     st.title("Competitive Map")
@@ -226,8 +222,6 @@ def main():
     # Initialize session state
     if 'df' not in st.session_state:
         st.session_state.df = None
-    if 'editor_key' not in st.session_state:
-        st.session_state.editor_key = random.randint(0, 100000)
     if 'selected_company' not in st.session_state:
         st.session_state.selected_company = None
 
@@ -239,7 +233,6 @@ def main():
     if st.session_state.df is None:
         with st.spinner("Fetching data..."):
             st.session_state.df = fetch_data()
-            st.session_state.df['select'] = False
 
     df = st.session_state.df
 
@@ -258,35 +251,31 @@ def main():
     map_html = create_competitive_map(non_ignored_companies)
     st.components.v1.html(map_html, height=650, scrolling=False)
 
-    # Function to handle company selection
-    def select_company():
-        key = st.session_state.editor_key
-        selected_rows = st.session_state[key]['edited_rows']
-        selected_rows = [int(row) for row in selected_rows if selected_rows[row]['select']]
-        try:
-            last_row = selected_rows[-1]
-            st.session_state.selected_company = df.iloc[last_row]['Company']
-        except IndexError:
-            pass
-        df['select'] = False
-        st.session_state.editor_key = random.randint(0, 100000)
-        st.rerun()
-
-    # Create a data editor for company selection
-    st.data_editor(
-        df[['Company', 'select']],
-        key=st.session_state.editor_key,
-        hide_index=True,
-        column_config={
-            "select": st.column_config.CheckboxColumn(
-                "Select",
-                help="Select to view company details",
-                default=False,
-            )
-        },
-        disabled=['Company'],
-        on_change=select_company
+    # Add JavaScript to handle messages from the iframe
+    st.markdown(
+        """
+        <script>
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'company_selected') {
+                const company = event.data.company;
+                console.log('Received company in parent:', company);
+                document.dispatchEvent(new CustomEvent('company_selected', {detail: company}));
+            }
+        });
+        </script>
+        """,
+        unsafe_allow_html=True
     )
+
+    # Use a Streamlit callback to handle company selection
+    def handle_company_selection():
+        selected_company = st.session_state.get('selected_company_input')
+        if selected_company and selected_company != st.session_state.selected_company:
+            st.session_state.selected_company = selected_company
+            st.rerun()
+
+    # Hidden input to update selected company
+    st.text_input("Selected Company", key="selected_company_input", on_change=handle_company_selection, label_visibility="hidden")
 
     # Company details section
     st.subheader("Company Details")
