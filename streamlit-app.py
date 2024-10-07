@@ -58,6 +58,7 @@ def create_competitive_map(df):
         border-radius: 50%;
         cursor: pointer;
         transition: transform 0.2s;
+        margin-bottom: 15px;
     }
     .company-logo:hover {
         transform: scale(1.1);
@@ -97,9 +98,9 @@ def create_competitive_map(df):
     }
     .bucket-area {
         position: absolute;
-        border: 2px solid #008080;
+        border: 1px solid #008080;
         border-radius: 15px;
-        padding: 10px;
+        padding: 10px 10px 5px 10px;
     }
     .axis-line {
         position: absolute;
@@ -136,8 +137,8 @@ def create_competitive_map(df):
 
     # Add sub-labels with margin from axis
     sub_labels = [
-        ("Multi Tenancy", 50.5, 17),
-        ("Multi System", 50.5, 27),
+        ("Multi Tenancy", 50.5, 10),
+        ("Multi System", 50.5, 20),
         ("System Flows", 50.5, 37),
         ("Action Models", 50.5, 63),
         ("Generic Task", 50.5, 83),
@@ -159,24 +160,19 @@ def create_competitive_map(df):
         "Enterprise Search": (15, 60),
         "Out of the Box Agents": (10, 85),
         "Vertical AI": (30, 70),
-        "UI Models": (70, 70),
+        "UI Models": (60, 6),
         "Reasoning Models": (60, 85),
-        "DIY AI": (75, 25)
+        "DIY AI": (60, 25)
     }
 
     for bucket, (bucket_x, bucket_y) in bucket_positions.items():
         company_count = bucket_counts.get(bucket, 0)
         
         # Calculate bucket size based on company count
-        if company_count > 0:
-            cols = min(3, company_count)
-            rows = math.ceil(company_count / cols)
-            width = max(cols * 50 + 20, 100)  # 50px per logo, 20px padding
-            height = rows * 50 + 40  # 50px per logo, 40px padding for label
-        else:
-            # Default size for empty buckets
-            width = 100
-            height = 50
+        cols = 3
+        rows = max(4, math.ceil(company_count / cols))  # Default to 4 rows minimum
+        width = cols * 50 + 20  # 50px per logo, 20px padding
+        height = rows * 65 + 30  # 65px per row (including margin), 30px padding for label
 
         map_html += f"""
         <div class="bucket-area" style="left: {bucket_x}%; top: {bucket_y}%; width: {width}px; height: {height}px;">
@@ -184,13 +180,14 @@ def create_competitive_map(df):
         """
         
         bucket_companies = df[df['bucket'] == bucket]
-        if company_count > 0:
-            cols = min(3, company_count)
-            for i, (_, company) in enumerate(bucket_companies.iterrows()):
-                row = i // cols
-                col = i % cols
-                x = 10 + (col * 50)
-                y = 30 + (row * 50)
+        for i in range(rows * cols):
+            row = i // cols
+            col = i % cols
+            x = 10 + (col * 50)
+            y = 25 + (row * 65)  # Increased vertical spacing
+            
+            if i < len(bucket_companies):
+                company = bucket_companies.iloc[i]
                 company_name = company['Company']
                 logo_url = company['Logo']
                 map_html += f"""
@@ -198,6 +195,11 @@ def create_competitive_map(df):
                      onclick="selectCompany('{company_name}');" title="{company_name}">
                     <span class="company-name">{company_name}</span>
                 </div>
+                """
+            else:
+                # Add empty placeholder for uniform grid
+                map_html += f"""
+                <div class="company-logo" style="left: {x}px; top: {y}px; background-image: none;"></div>
                 """
         
         map_html += "</div>"
