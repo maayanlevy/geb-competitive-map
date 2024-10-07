@@ -50,8 +50,8 @@ def create_competitive_map(df):
     }
     .company-logo {
         position: absolute;
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
@@ -70,7 +70,7 @@ def create_competitive_map(df):
         background-color: rgba(255, 255, 255, 0.7);
         padding: 2px 4px;
         border-radius: 3px;
-        font-size: 8px;
+        font-size: 7px;
         max-width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -102,7 +102,7 @@ def create_competitive_map(df):
     }
     .bucket-area {
         position: absolute;
-        border: 2px solid #008080;
+        border: 1px solid #008080;
         border-radius: 15px;
         padding: 10px;
     }
@@ -110,14 +110,23 @@ def create_competitive_map(df):
         position: absolute;
         background-color: #A9A9A9;
     }
+    .arrow-head {
+        width: 0;
+        height: 0;
+        position: absolute;
+    }
     </style>
     <div class="competitive-map">
     """
 
-    # Add axis lines
+    # Add axis lines with arrow heads
     map_html += """
-    <div class="axis-line" style="left: 50%; top: 0; width: 2px; height: 100%;"></div>
-    <div class="axis-line" style="left: 0; top: 50%; width: 100%; height: 2px;"></div>
+    <div class="axis-line" style="left: 50%; top: 5%; width: 1px; height: 90%;"></div>
+    <div class="arrow-head" style="left: 50%; top: 5%; transform: translateX(-50%); border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="left: 50%; bottom: 5%; transform: translateX(-50%) rotate(180deg); border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="axis-line" style="left: 5%; top: 50%; width: 90%; height: 1px;"></div>
+    <div class="arrow-head" style="left: 5%; top: 50%; transform: translateY(-50%) rotate(-90deg); border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="right: 5%; top: 50%; transform: translateY(-50%) rotate(90deg); border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 10px solid #A9A9A9;"></div>
     """
 
     # Add axis labels
@@ -130,28 +139,20 @@ def create_competitive_map(df):
 
     # Add sub-labels
     sub_labels = [
-        ("Multi Tenancy", 50, 15),
-        ("Multi System", 50, 25),
-        ("System Flows", 50, 35),
-        ("Action Models", 50, 65),
-        ("Generic Task", 50, 85),
-        ("Generic Prompts", 15, 50),
-        ("My Data", 30, 50),
-        ("Customized Prompts", 45, 50),
-        ("My Tools", 60, 50),
-        ("Custom Flows", 75, 50),
-        ("Organization", 90, 50)
+        ("Multi Tenancy", 50.5, 17),
+        ("Multi System", 50.5, 27),
+        ("System Flows", 50.5, 37),
+        ("Action Models", 50.5, 63),
+        ("Generic Task", 50.5, 83),
+        ("Generic Prompts", 17, 51),
+        ("My Data", 32, 51),
+        ("Customized Prompts", 47, 51),
+        ("My Tools", 62, 51),
+        ("Custom Flows", 77, 51),
+        ("Organization", 92, 51)
     ]
     for label, x, y in sub_labels:
         map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
-
-    # Add main labels
-    main_labels = [
-        ("Generic Processes", 5, 95),
-        ("My Processes", 85, 95)
-    ]
-    for label, x, y in main_labels:
-        map_html += f'<div class="main-label" style="left: {x}%; top: {y}%;">{label}</div>'
 
     # Calculate bucket sizes based on company count
     bucket_counts = df['bucket'].value_counts()
@@ -171,10 +172,10 @@ def create_competitive_map(df):
         
         # Calculate bucket size based on company count
         if company_count > 0:
-            cols = min(3, company_count)
+            cols = min(4, company_count)  # Changed to 4 columns
             rows = math.ceil(company_count / cols)
-            width = max(cols * 50 + 20, 100)  # 50px per logo, 20px padding
-            height = rows * 50 + 40  # 50px per logo, 40px padding for label
+            width = max(cols * 40 + 20, 100)  # 40px per logo, 20px padding
+            height = rows * 45 + 40  # 45px per row, 40px padding for label
         else:
             # Default size for empty buckets
             width = 100
@@ -187,12 +188,12 @@ def create_competitive_map(df):
         
         bucket_companies = df[df['bucket'] == bucket]
         if company_count > 0:
-            cols = min(3, company_count)
+            cols = min(4, company_count)  # Changed to 4 columns
             for i, (_, company) in enumerate(bucket_companies.iterrows()):
                 row = i // cols
                 col = i % cols
-                x = 10 + (col * 50)
-                y = 30 + (row * 50)
+                x = 10 + (col * 40)
+                y = 30 + (row * 45)
                 company_name = company['Company']
                 logo_url = company['Logo']
                 map_html += f"""
