@@ -20,7 +20,7 @@ def fetch_data():
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
         result = sheet.values().get(
-            spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA',
+            spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA',  # Replace with your actual Spreadsheet ID
             range='Sheet1'
         ).execute()
         data = result.get('values', [])
@@ -120,15 +120,16 @@ def create_competitive_map(df):
             transform: translateY(-50%);
         }
         .y-arrow {
-            border-width: 10px 5px 0 5px;
-            border-color: #000 transparent transparent transparent;
-            left: 50%;
+            border-width: 0 5px 10px 5px;
+            border-color: transparent transparent #000 transparent;
             top: 0;
+            left: 50%;
             transform: translateX(-50%);
         }
         .axis-label {
             position: absolute;
-            font-size: 12px;
+            font-size: 14px;
+            font-weight: bold;
         }
         .x-label-left {
             left: 10px;
@@ -153,11 +154,13 @@ def create_competitive_map(df):
     </style>
     <div class="map-container">
     """
+
     for i in range(0, 4, 2):
         map_html += '<div class="row">'
         for j in range(2):
             if i + j < len(buckets):
                 bucket = buckets[i + j]
+                # Ensure case-insensitive matching and strip whitespace
                 bucket_data = df[df['bucket'].str.strip().str.lower() == bucket.lower()]
                 map_html += f'''
                 <div class="quadrant">
@@ -213,17 +216,12 @@ def main():
     map_html = create_competitive_map(df)
     selected_company = st.components.v1.html(map_html, height=650, scrolling=True)
 
-    # Retrieve selected company from query parameters using the updated method
-    query_params = st.query_params
-    company_name_encoded = query_params.get('selected_company', [None])[0]
-    company_name = urllib.parse.unquote(company_name_encoded) if company_name_encoded else None
-
-    # Debug: Display selected company name from query parameters
-    st.write("**Selected Company from Query Params:**", company_name)
+    # Debug: Display selected company from HTML component
+    st.write("**Selected Company from HTML Component:**", selected_company)
 
     # Update session state if a company was selected
-    if company_name:
-        st.session_state.selected_company = company_name
+    if selected_company:
+        st.session_state.selected_company = selected_company
 
     # Company details section
     st.subheader("Company Details")
@@ -231,7 +229,12 @@ def main():
     if st.session_state.selected_company:
         company_name = st.session_state.selected_company
         if 'Company' in df.columns:
-            company_row = df[df['Company'].str.strip().str.lower() == company_name.strip().lower()]
+            # Ensure company_name is a string
+            if isinstance(company_name, str):
+                company_row = df[df['Company'].str.strip().str.lower() == company_name.strip().lower()]
+            else:
+                st.error("Selected company name is not a valid string.")
+                return
         else:
             st.error("The 'Company' column is missing in the data.")
             return
