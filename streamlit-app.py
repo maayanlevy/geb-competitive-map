@@ -275,16 +275,25 @@ def main():
     )
 
     # Function to handle company selection
-def handle_company_selection():
-    selected_company = st.session_state.get('company_dropdown')
-    if selected_company and selected_company != st.session_state.selected_company:
-        st.session_state.selected_company = selected_company
-        st.rerun()
+    def handle_company_selection():
+        selected_company = st.session_state.get('company_dropdown')
+        if selected_company and selected_company != st.session_state.selected_company:
+            st.session_state.selected_company = selected_company
+            st.rerun()
+
+    # Get the list of companies and set the first one as default
+    company_list = [company for company in non_ignored_companies['Company'].tolist() if company is not None]
+    default_company = company_list[0] if company_list else None
+
+    # Set the default company in session state if not already set
+    if st.session_state.selected_company is None:
+        st.session_state.selected_company = default_company
 
     # Dropdown to select company
-    company_list = [''] + sorted([company for company in non_ignored_companies['Company'].tolist() if company is not None])
-    st.selectbox("Select a company", options=company_list, key="company_dropdown", 
-                 index=0, on_change=handle_company_selection)
+    st.selectbox("Select a company", options=[''] + sorted(company_list), 
+                 key="company_dropdown", 
+                 index=company_list.index(st.session_state.selected_company) + 1 if st.session_state.selected_company else 0,
+                 on_change=handle_company_selection)
 
     # Company details section
     st.subheader("Company Details")
