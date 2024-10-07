@@ -169,22 +169,23 @@ def create_competitive_map(df):
         """
         
         bucket_companies = df[df['bucket'] == bucket]
-        rows = math.ceil(math.sqrt(company_count))
-        cols = math.ceil(company_count / rows)
-        
-        for i, (_, company) in enumerate(bucket_companies.iterrows()):
-            row = i // cols
-            col = i % cols
-            x = 10 + (col * 80 / cols)  # 10% padding, 80% for logos
-            y = 20 + (row * 70 / rows)  # 20% padding for label, 70% for logos
-            company_name = company['Company']
-            logo_url = company['Logo']
-            map_html += f"""
-            <div class="company-logo" style="left: {x}%; top: {y}%; background-image: url('{logo_url}');"
-                 onclick="selectCompany('{company_name}');" title="{company_name}">
-                <span class="company-name">{company_name}</span>
-            </div>
-            """
+        if company_count > 0:
+            rows = math.ceil(math.sqrt(company_count))
+            cols = math.ceil(company_count / rows)
+            
+            for i, (_, company) in enumerate(bucket_companies.iterrows()):
+                row = i // cols
+                col = i % cols
+                x = 10 + (col * 80 / cols)  # 10% padding, 80% for logos
+                y = 20 + (row * 70 / rows)  # 20% padding for label, 70% for logos
+                company_name = company['Company']
+                logo_url = company['Logo']
+                map_html += f"""
+                <div class="company-logo" style="left: {x}%; top: {y}%; background-image: url('{logo_url}');"
+                     onclick="selectCompany('{company_name}');" title="{company_name}">
+                    <span class="company-name">{company_name}</span>
+                </div>
+                """
         
         map_html += "</div>"
 
