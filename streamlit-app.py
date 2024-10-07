@@ -87,11 +87,6 @@ def create_competitive_map(df):
         font-size: 12px;
         color: #FFA500;
     }
-    .main-label {
-        position: absolute;
-        font-size: 16px;
-        color: #A9A9A9;
-    }
     .bucket-label {
         position: absolute;
         font-size: 14px;
@@ -127,8 +122,8 @@ def create_competitive_map(df):
     <div class="arrow-head" style="left: 50%; top: 5%; transform: translateX(-50%) rotate(180deg); border-bottom: 10px solid #A9A9A9;"></div>
     <div class="arrow-head" style="left: 50%; bottom: 5%; transform: translateX(-50%); border-bottom: 10px solid #A9A9A9;"></div>
     <div class="axis-line" style="left: 5%; top: 50%; width: 90%; height: 1px;"></div>
-    <div class="arrow-head" style="left: 5%; top: 50%; transform: translateY(-50%) rotate(-90deg); border-bottom: 10px solid #A9A9A9;"></div>
-    <div class="arrow-head" style="right: 5%; top: 50%; transform: translateY(-50%) rotate(90deg); border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="left: 5%; top: 50%; transform: translateY(-50%) rotate(90deg); border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="right: 5%; top: 50%; transform: translateY(-50%) rotate(-90deg); border-bottom: 10px solid #A9A9A9;"></div>
     """
 
     # Add axis labels
@@ -155,14 +150,6 @@ def create_competitive_map(df):
     ]
     for label, x, y in sub_labels:
         map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
-
-    # Add main labels
-    main_labels = [
-        ("Generic Processes", 5, 95),
-        ("My Processes", 85, 95)
-    ]
-    for label, x, y in main_labels:
-        map_html += f'<div class="main-label" style="left: {x}%; top: {y}%;">{label}</div>'
 
     # Calculate bucket sizes based on company count
     bucket_counts = df['bucket'].value_counts()
