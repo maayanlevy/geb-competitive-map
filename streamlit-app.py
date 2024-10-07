@@ -178,7 +178,7 @@ def create_competitive_map(df):
     </div>
     <script>
     function selectCompany(companyName) {
-        Streamlit.setComponentValue(companyName);
+        window.location.href = `?selected_company=${encodeURIComponent(companyName)}`;
     }
     </script>
     """
@@ -199,13 +199,24 @@ def main():
         st.warning("No data available. Please check your Google Sheets connection.")
         return
 
-    # Create and display the competitive map, capturing the selected company
+    # Debug: Display DataFrame columns
+    st.write("DataFrame Columns:", df.columns)
+
+    # Create and display the competitive map
     map_html = create_competitive_map(df)
-    selected_company = st.components.v1.html(map_html, height=650, scrolling=True)
+    st.components.v1.html(map_html, height=650, scrolling=True)
+
+    # Retrieve selected company from query parameters
+    query_params = st.experimental_get_query_params()
+    company_name_encoded = query_params.get('selected_company', [None])[0]
+    company_name = urllib.parse.unquote(company_name_encoded) if company_name_encoded else None
+
+    # Debug: Display selected company name
+    st.write("Selected Company:", company_name)
 
     # Update session state if a company was selected
-    if selected_company:
-        st.session_state.selected_company = selected_company
+    if company_name:
+        st.session_state.selected_company = company_name
 
     # Company details section
     st.subheader("Company Details")
@@ -213,6 +224,12 @@ def main():
     if st.session_state.selected_company:
         company_name = st.session_state.selected_company
         company_row = df[df['Company'] == company_name]
+        
+        # Debug: Display matching rows
+        st.write(f"Selected Company Name: {company_name}")
+        st.write("Matching Rows:")
+        st.write(company_row)
+        
         if not company_row.empty:
             company_data = company_row.iloc[0]
 
@@ -229,7 +246,6 @@ def main():
                 st.markdown(f"**Website:** [{company_data.get('Website', '')}]({company_data.get('Website', '')})")
                 st.markdown(f"**Investors:** {company_data.get('Investors', 'N/A')}")
                 st.markdown(f"**Comments:** {company_data.get('Comments', 'N/A')}")
-
         else:
             st.warning("Company details not found.")
     else:
