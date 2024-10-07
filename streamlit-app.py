@@ -147,9 +147,9 @@ def create_competitive_map(df):
         ("Generic Prompts", 10, 51),
         ("My Data", 22, 51),
         ("Customized Prompts", 32, 51),
-        ("My Tools", 62, 51),
-        ("Custom Flows", 77, 51),
-        ("Organization", 92, 51)
+        ("My Tools", 55, 51),
+        ("Custom Flows", 70, 51),
+        ("Organization", 87, 51)
     ]
     for label, x, y in sub_labels:
         map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
@@ -164,7 +164,7 @@ def create_competitive_map(df):
         "Vertical AI": (30, 60),
         "UI Models": (60, 60),
         "Reasoning Models": (60, 75),
-        "DIY AI": (60, 30)
+        "DIY AI": (70, 30)
     }
 
     for bucket, (bucket_x, bucket_y) in bucket_positions.items():
