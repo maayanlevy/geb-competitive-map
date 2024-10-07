@@ -282,8 +282,11 @@ def main():
             st.session_state.selected_company = selected_company
             st.rerun()
 
-    # Get the list of companies and set the first one as default
-    company_list = [company for company in non_ignored_companies['Company'].tolist() if company is not None]
+    # Get the list of companies that are in the map (non-ignored companies)
+    company_list = non_ignored_companies['Company'].tolist()
+    company_list = [company for company in company_list if company is not None]
+    
+    # Set the default company
     default_company = company_list[0] if company_list else None
 
     # Set the default company in session state if not already set
