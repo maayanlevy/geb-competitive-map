@@ -144,9 +144,9 @@ def create_competitive_map(df):
         ("System Flows", 50.5, 37),
         ("Action Models", 50.5, 63),
         ("Generic Task", 50.5, 83),
-        ("Generic Prompts", 17, 51),
-        ("My Data", 32, 51),
-        ("Customized Prompts", 47, 51),
+        ("Generic Prompts", 5, 51),
+        ("My Data", 20, 51),
+        ("Customized Prompts", 30, 51),
         ("My Tools", 62, 51),
         ("Custom Flows", 77, 51),
         ("Organization", 92, 51)
