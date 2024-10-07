@@ -275,14 +275,14 @@ def main():
     )
 
     # Function to handle company selection
-    def handle_company_selection():
-        selected_company = st.session_state.get('company_dropdown')
-        if selected_company and selected_company != st.session_state.selected_company:
-            st.session_state.selected_company = selected_company
-            st.rerun()
+def handle_company_selection():
+    selected_company = st.session_state.get('company_dropdown')
+    if selected_company and selected_company != st.session_state.selected_company:
+        st.session_state.selected_company = selected_company
+        st.rerun()
 
     # Dropdown to select company
-    company_list = [''] + sorted(non_ignored_companies['Company'].tolist())
+    company_list = [''] + sorted([company for company in non_ignored_companies['Company'].tolist() if company is not None])
     st.selectbox("Select a company", options=company_list, key="company_dropdown", 
                  index=0, on_change=handle_company_selection)
 
