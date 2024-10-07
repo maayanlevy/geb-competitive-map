@@ -110,14 +110,25 @@ def create_competitive_map(df):
         position: absolute;
         background-color: #A9A9A9;
     }
+    .arrow-head {
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        position: absolute;
+    }
     </style>
     <div class="competitive-map">
     """
 
-    # Add axis lines
+    # Add axis lines with arrow heads
     map_html += """
-    <div class="axis-line" style="left: 50%; top: 0; width: 2px; height: 100%;"></div>
-    <div class="axis-line" style="left: 0; top: 50%; width: 100%; height: 2px;"></div>
+    <div class="axis-line" style="left: 50%; top: 5%; width: 1px; height: 90%;"></div>
+    <div class="arrow-head" style="left: 50%; top: 5%; transform: translateX(-50%) rotate(180deg); border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="left: 50%; bottom: 5%; transform: translateX(-50%); border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="axis-line" style="left: 5%; top: 50%; width: 90%; height: 1px;"></div>
+    <div class="arrow-head" style="left: 5%; top: 50%; transform: translateY(-50%) rotate(-90deg); border-bottom: 10px solid #A9A9A9;"></div>
+    <div class="arrow-head" style="right: 5%; top: 50%; transform: translateY(-50%) rotate(90deg); border-bottom: 10px solid #A9A9A9;"></div>
     """
 
     # Add axis labels
@@ -128,19 +139,19 @@ def create_competitive_map(df):
     <div class="axis-label" style="top: 50%; right: 10px; transform: rotate(90deg) translateY(-50%);">My Processes</div>
     """
 
-    # Add sub-labels
+    # Add sub-labels with margin from axis
     sub_labels = [
-        ("Multi Tenancy", 50, 15),
-        ("Multi System", 50, 25),
-        ("System Flows", 50, 35),
-        ("Action Models", 50, 65),
-        ("Generic Task", 50, 85),
-        ("Generic Prompts", 15, 50),
-        ("My Data", 30, 50),
-        ("Customized Prompts", 45, 50),
-        ("My Tools", 60, 50),
-        ("Custom Flows", 75, 50),
-        ("Organization", 90, 50)
+        ("Multi Tenancy", 50, 17),
+        ("Multi System", 50, 27),
+        ("System Flows", 50, 37),
+        ("Action Models", 50, 63),
+        ("Generic Task", 50, 83),
+        ("Generic Prompts", 17, 50),
+        ("My Data", 32, 50),
+        ("Customized Prompts", 47, 50),
+        ("My Tools", 62, 50),
+        ("Custom Flows", 77, 50),
+        ("Organization", 92, 50)
     ]
     for label, x, y in sub_labels:
         map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
@@ -259,7 +270,11 @@ def main():
             if (event.data.type === 'company_selected') {
                 const company = event.data.company;
                 console.log('Received company in parent:', company);
-                document.dispatchEvent(new CustomEvent('company_selected', {detail: company}));
+                const selectElement = document.querySelector('select[data-testid="stSelectbox"]');
+                if (selectElement) {
+                    selectElement.value = company;
+                    selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+                }
             }
         });
         </script>
@@ -274,8 +289,9 @@ def main():
             st.session_state.selected_company = selected_company
             st.rerun()
 
-    # Hidden input to update selected company
-    st.text_input("Selected Company", key="selected_company_input", on_change=handle_company_selection, label_visibility="hidden")
+    # Dropdown to select company
+    company_list = non_ignored_companies['Company'].tolist()
+    st.selectbox("Select a company", options=company_list, key="selected_company_input", on_change=handle_company_selection, index=None)
 
     # Company details section
     st.subheader("Company Details")
