@@ -19,8 +19,10 @@ def fetch_data():
     try:
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA', 
-                                    range='Sheet1').execute()
+        result = sheet.values().get(
+            spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA',
+            range='Sheet1'
+        ).execute()
         data = result.get('values', [])
         df = pd.DataFrame(data[1:], columns=data[0])
         return df
@@ -33,7 +35,7 @@ def create_company_card(company_data):
     company_encoded = urllib.parse.quote(company_data['Company'])
     return f"""
     <div class="company-card">
-        <a href="?selected_company={company_encoded}">
+        <a href="?selected_company={company_encoded}" target="_parent">
             <img src="{company_data['Logo']}" alt="{company_data['Company']} logo">
             <p>{company_data['Company']}</p>
         </a>
@@ -93,7 +95,7 @@ def create_competitive_map(df):
     </style>
     <div class="map-container">
     """
-    
+
     for i in range(0, 4, 2):
         map_html += '<div class="row">'
         for j in range(2):
@@ -112,7 +114,7 @@ def create_competitive_map(df):
                     map_html += create_company_card(company)
                 map_html += '</div></div>'
         map_html += '</div>'
-    
+
     map_html += """
     </div>
     """
@@ -145,6 +147,7 @@ def main():
         company_row = df[df['Company'] == company_name]
         if not company_row.empty:
             company_data = company_row.iloc[0]
+
             st.write(f"**Company:** {company_name}")
             st.write(f"**Description:** {company_data['description']}")
             st.write(f"**Location:** {company_data['Location']}")
