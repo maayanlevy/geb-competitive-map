@@ -196,7 +196,7 @@ def create_competitive_map(df):
     return map_html
 
 def handle_custom_events():
-    custom_events = components.v1.html(
+    custom_events = components.html(
         """
         <script>
         const doc = window.parent.document;
