@@ -278,7 +278,17 @@ def main():
     # Hidden input and button to update selected company
     selected_company = st.empty()
     new_selection = selected_company.text_input("Selected Company", key="selected-company-input", label_visibility="hidden")
-    update_button = st.button("Update", key="update-button", style="display: none;")
+    
+    # Hide the update button using CSS
+    st.markdown("""
+        <style>
+        #update-button {
+            display: none;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    update_button = st.button("Update", key="update-button")
 
     if update_button and new_selection != st.session_state.selected_company:
         st.session_state.selected_company = new_selection
@@ -309,9 +319,6 @@ def main():
             st.warning("Company details not found.")
     else:
         st.write("No company selected.")
-
-if __name__ == "__main__":
-    main()
 
 if __name__ == "__main__":
     main()
