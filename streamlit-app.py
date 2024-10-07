@@ -20,7 +20,7 @@ def fetch_data():
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
         result = sheet.values().get(
-            spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA',
+            spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA',  # Replace with your actual Spreadsheet ID
             range='Sheet1'
         ).execute()
         data = result.get('values', [])
@@ -107,10 +107,10 @@ def create_competitive_map(df):
             left: 50%;
         }
         .arrow {
+            position: absolute;
             width: 0;
             height: 0;
             border-style: solid;
-            position: absolute;
         }
         .x-arrow {
             border-width: 5px 0 5px 10px;
@@ -120,56 +120,52 @@ def create_competitive_map(df):
             transform: translateY(-50%);
         }
         .y-arrow {
-            border-width: 0 5px 10px 5px;
-            border-color: transparent transparent #000 transparent;
-            top: 0;
+            border-width: 10px 5px 0 5px;
+            border-color: #000 transparent transparent transparent;
             left: 50%;
+            top: 0;
             transform: translateX(-50%);
         }
         .axis-label {
             position: absolute;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 12px;
+            color: #000;
         }
         .x-label-left {
-            left: 10px;
-            top: 52%;
+            top: 50%;
+            left: 5px;
             transform: translateY(-50%);
         }
         .x-label-right {
-            right: 10px;
-            top: 52%;
+            top: 50%;
+            right: 5px;
             transform: translateY(-50%);
         }
         .y-label-top {
-            top: 10px;
-            left: 52%;
+            left: 50%;
+            top: 5px;
             transform: translateX(-50%);
         }
         .y-label-bottom {
-            bottom: 10px;
-            left: 52%;
+            left: 50%;
+            bottom: 5px;
             transform: translateX(-50%);
         }
     </style>
     <div class="map-container">
     """
-    for i in range(0, 4, 2):
-        map_html += '<div class="row">'
-        for j in range(2):
-            if i + j < len(buckets):
-                bucket = buckets[i + j]
-                # Ensure case-insensitive matching and strip whitespace
-                bucket_data = df[df['bucket'].str.strip().str.lower() == bucket.lower()]
-                map_html += f'''
+    for bucket in buckets:
+        bucket_data = df[df['bucket'].str.strip().str.lower() == bucket.lower()]
+        map_html += f'''
+            <div class="row">
                 <div class="quadrant">
                     <h3>{bucket}</h3>
                     <div class="companies-container">
                 '''
-                for _, company in bucket_data.iterrows():
-                    map_html += create_company_card(company)
-                map_html += '</div></div>'
-        map_html += '</div>'
+        for _, company in bucket_data.iterrows():
+            map_html += create_company_card(company)
+        map_html += '</div></div>'
+    map_html += '</div>'
     # Add axes and labels
     map_html += """
         <div class="axis x-axis"></div>
