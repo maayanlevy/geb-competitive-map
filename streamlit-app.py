@@ -158,13 +158,13 @@ def create_competitive_map(df):
     bucket_counts = df['bucket'].value_counts()
 
     bucket_positions = {
-        "Customized AI": (25, 25),
+        "Customized AI": (25, 30),
         "Enterprise Search": (15, 60),
         "Out of the Box Agents": (10, 85),
         "Vertical AI": (30, 70),
         "UI Models": (60, 60),
         "Reasoning Models": (60, 80),
-        "DIY AI": (60, 25)
+        "DIY AI": (60, 30)
     }
 
     for bucket, (bucket_x, bucket_y) in bucket_positions.items():
