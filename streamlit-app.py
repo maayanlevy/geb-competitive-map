@@ -208,15 +208,16 @@ def main():
 
     # Create and display the competitive map
     map_html = create_competitive_map(df)
-    selected_company = st.components.v1.html(map_html, height=650, scrolling=True)
+    st.components.v1.html(map_html, height=650, scrolling=True)
 
-    # Debug: Display selected company from HTML component
-    if selected_company is not None:
-        st.write("**Selected Company from HTML Component:**", str(selected_company))
+    # Check if a company was selected
+    if st.session_state.get('selected_company') != st.session_state.get('_last_selected_company'):
+        st.session_state['_last_selected_company'] = st.session_state.get('selected_company')
+        st.rerun()
 
-    # Update session state if a company was selected
-    if selected_company is not None:
-        st.session_state.selected_company = str(selected_company)
+    # Debug: Display selected company
+    if st.session_state.get('selected_company'):
+        st.write("**Selected Company:**", st.session_state.get('selected_company'))
 
     # Company details section
     st.subheader("Company Details")
