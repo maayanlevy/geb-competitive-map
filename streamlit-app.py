@@ -133,8 +133,8 @@ def create_competitive_map(df):
     map_html += """
     <div class="axis-label" style="top: 10px; left: 50%; transform: translateX(-50%);">Custom Reasoning</div>
     <div class="axis-label" style="bottom: 10px; left: 50%; transform: translateX(-50%);">Model Reasoning</div>
-    <div class="axis-label" style="top: 50%; left: 10px; transform: rotate(-90deg) translateY(-50%);">Generic Processes</div>
-    <div class="axis-label" style="top: 50%; right: 10px; transform: rotate(90deg) translateY(-50%);">My Processes</div>
+    <div class="axis-label" style="top: 50%; left: 5px; transform: rotate(-90deg) translateY(-50%);">Generic Processes</div>
+    <div class="axis-label" style="top: 50%; right: 5px; transform: rotate(90deg) translateY(-50%);">My Processes</div>
     """
 
     # Add sub-labels
