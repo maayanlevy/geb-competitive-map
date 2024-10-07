@@ -181,7 +181,11 @@ def create_competitive_map(df):
     <script>
     function selectCompany(companyName) {
         console.log("selectCompany called with:", companyName);
-        Streamlit.setComponentValue(companyName);
+        if (window.Streamlit) {
+            Streamlit.setComponentValue(companyName);
+        } else {
+            console.error("Streamlit object not found");
+        }
     }
     </script>
     """
@@ -195,8 +199,10 @@ def handle_custom_events():
         path=None,
     )
     
-    custom_component = component_value(key="custom_events")
-    return custom_component
+    selected_company = component_value(key="custom_events")
+    if selected_company:
+        print(f"Debug: handle_custom_events received {selected_company}")
+    return selected_company
 
 # In the main() function, replace the existing handle_custom_events() call with:
 selected_company = handle_custom_events()
