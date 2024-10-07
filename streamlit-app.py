@@ -24,7 +24,11 @@ def fetch_data():
             range='Sheet1'
         ).execute()
         data = result.get('values', [])
-        df = pd.DataFrame(data[1:], columns=data[0])
+        if not data:
+            st.warning("No data found in the spreadsheet.")
+            return pd.DataFrame()
+        columns = [col.strip() for col in data[0]]  # Strip whitespace from column names
+        df = pd.DataFrame(data[1:], columns=columns)
         return df
     except HttpError as err:
         st.error(f"An error occurred: {err}")
@@ -154,7 +158,7 @@ def create_competitive_map(df):
         for j in range(2):
             if i + j < len(buckets):
                 bucket = buckets[i + j]
-                bucket_data = df[df['bucket'] == bucket]
+                bucket_data = df[df['bucket'].str.strip().str.lower() == bucket.lower()]
                 map_html += f'''
                 <div class="quadrant">
                     <h3>{bucket}</h3>
@@ -178,7 +182,8 @@ def create_competitive_map(df):
     </div>
     <script>
     function selectCompany(companyName) {
-        window.location.href = `?selected_company=${encodeURIComponent(companyName)}`;
+        // Send the selected company name to Streamlit
+        Streamlit.setComponentValue(companyName);
     }
     </script>
     """
@@ -199,20 +204,22 @@ def main():
         st.warning("No data available. Please check your Google Sheets connection.")
         return
 
-    # Debug: Display DataFrame columns
-    st.write("DataFrame Columns:", df.columns)
+    # Debug: Display DataFrame columns and first few rows
+    st.write("**DataFrame Columns:**", df.columns.tolist())
+    st.write("**DataFrame Sample:**")
+    st.dataframe(df.head())
 
     # Create and display the competitive map
     map_html = create_competitive_map(df)
-    st.components.v1.html(map_html, height=650, scrolling=True)
+    selected_company = st.components.v1.html(map_html, height=650, scrolling=True)
 
-    # Retrieve selected company from query parameters
-    query_params = st.experimental_get_query_params()
+    # Retrieve selected company from query parameters using the updated method
+    query_params = st.query_params
     company_name_encoded = query_params.get('selected_company', [None])[0]
     company_name = urllib.parse.unquote(company_name_encoded) if company_name_encoded else None
 
-    # Debug: Display selected company name
-    st.write("Selected Company:", company_name)
+    # Debug: Display selected company name from query parameters
+    st.write("**Selected Company from Query Params:**", company_name)
 
     # Update session state if a company was selected
     if company_name:
@@ -223,13 +230,17 @@ def main():
 
     if st.session_state.selected_company:
         company_name = st.session_state.selected_company
-        company_row = df[df['Company'] == company_name]
-        
-        # Debug: Display matching rows
-        st.write(f"Selected Company Name: {company_name}")
-        st.write("Matching Rows:")
-        st.write(company_row)
-        
+        if 'Company' in df.columns:
+            company_row = df[df['Company'].str.strip().str.lower() == company_name.strip().lower()]
+        else:
+            st.error("The 'Company' column is missing in the data.")
+            return
+
+        # Debug: Display selected company name and matching rows
+        st.write(f"**Selected Company Name:** {company_name}")
+        st.write("**Matching Rows:**")
+        st.dataframe(company_row)
+
         if not company_row.empty:
             company_data = company_row.iloc[0]
 
