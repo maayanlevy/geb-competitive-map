@@ -141,7 +141,11 @@ def main():
     <script>
     window.addEventListener('message', function(event) {
         if (event.data.type === 'company_selected') {
-            window.parent.postMessage({type: 'update_streamlit', company: event.data.company}, '*');
+            const data = {
+                company: event.data.company,
+                sessionState: { selected_company: event.data.company }
+            };
+            window.parent.postMessage({type: 'streamlit:set_widget_value', data: data}, '*');
         }
     }, false);
     </script>
@@ -154,6 +158,7 @@ def main():
     company_name = st.session_state.get('selected_company')
     if company_name:
         company_data = df[df['Company'] == company_name].iloc[0]
+        selected_company.write(f"**Company:** {company_name}")
         st.write(f"**Description:** {company_data['description']}")
         st.write(f"**Location:** {company_data['Location']}")
         st.write(f"**Employees:** {company_data['Employees']}")
