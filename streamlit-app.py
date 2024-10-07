@@ -143,7 +143,7 @@ def create_competitive_map(df):
         ("Multi System", 50.5, 20),
         ("System Flows", 50.5, 37),
         ("Action Models", 50.5, 63),
-        ("Generic Task", 50.5, 83),
+        ("Generic Task", 50.5, 90),
         ("Generic Prompts", 10, 51),
         ("My Data", 22, 51),
         ("Customized Prompts", 32, 51),
@@ -163,7 +163,7 @@ def create_competitive_map(df):
         "Out of the Box Agents": (5, 80),
         "Vertical AI": (30, 60),
         "UI Models": (60, 60),
-        "Reasoning Models": (60, 80),
+        "Reasoning Models": (60, 75),
         "DIY AI": (60, 30)
     }
 
