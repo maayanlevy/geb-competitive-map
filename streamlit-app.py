@@ -70,7 +70,7 @@ def create_competitive_map(df):
         background-color: rgba(255, 255, 255, 0.7);
         padding: 2px 4px;
         border-radius: 3px;
-        font-size: 7px;
+        font-size: 8px;
         max-width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
