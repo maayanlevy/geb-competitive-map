@@ -183,7 +183,7 @@ def create_competitive_map(df):
 
         map_html += f"""
         <div class="bucket-area" style="left: {bucket_x}%; top: {bucket_y}%; width: {width}px; height: {height}px;">
-            <div class="bucket-label">{bucket} ({company_count})</div>
+            <div class="bucket-label">{bucket}</div>
         """
         
         bucket_companies = df[df['bucket'] == bucket]
