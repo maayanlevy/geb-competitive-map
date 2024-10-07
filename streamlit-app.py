@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import urllib.parse
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -29,10 +30,13 @@ def fetch_data():
 
 # Function to create company card
 def create_company_card(company_data):
+    company_encoded = urllib.parse.quote(company_data['Company'])
     return f"""
-    <div class="company-card" onclick="showDetails('{company_data['Company']}')">
-        <img src="{company_data['Logo']}" alt="{company_data['Company']} logo">
-        <p>{company_data['Company']}</p>
+    <div class="company-card">
+        <a href="?selected_company={company_encoded}">
+            <img src="{company_data['Logo']}" alt="{company_data['Company']} logo">
+            <p>{company_data['Company']}</p>
+        </a>
     </div>
     """
 
@@ -79,7 +83,8 @@ def create_competitive_map(df):
         .company-card img {
             width: 50px;
             height: 50px;
-            object-fit: contain;
+            object-fit: cover;
+            border-radius: 50%;
         }
         .company-card p {
             margin: 5px 0;
@@ -92,28 +97,24 @@ def create_competitive_map(df):
     for i in range(0, 4, 2):
         map_html += '<div class="row">'
         for j in range(2):
-            bucket = buckets[i+j]
-            bucket_data = df[df['bucket'] == bucket]
-            map_html += f'''
-            <div class="quadrant">
-                <h3>{bucket}</h3>
-                <div class="category-box">
-                    <h4>Category: {bucket}</h4>
-                </div>
-                <div class="companies-container">
-            '''
-            for _, company in bucket_data.iterrows():
-                map_html += create_company_card(company)
-            map_html += '</div></div>'
+            if i + j < len(buckets):
+                bucket = buckets[i + j]
+                bucket_data = df[df['bucket'] == bucket]
+                map_html += f'''
+                <div class="quadrant">
+                    <h3>{bucket}</h3>
+                    <div class="category-box">
+                        <h4>Category: {bucket}</h4>
+                    </div>
+                    <div class="companies-container">
+                '''
+                for _, company in bucket_data.iterrows():
+                    map_html += create_company_card(company)
+                map_html += '</div></div>'
         map_html += '</div>'
     
     map_html += """
     </div>
-    <script>
-    function showDetails(company) {
-        window.parent.postMessage({type: 'company_selected', company: company}, '*');
-    }
-    </script>
     """
     return map_html
 
@@ -132,41 +133,31 @@ def main():
     map_html = create_competitive_map(df)
     st.components.v1.html(map_html, height=650)
 
+    # Retrieve selected company from query parameters
+    query_params = st.experimental_get_query_params()
+    company_name_encoded = query_params.get('selected_company', [None])[0]
+    company_name = urllib.parse.unquote(company_name_encoded) if company_name_encoded else None
+
     # Company details section
     st.subheader("Company Details")
-    selected_company = st.empty()
-
-    # JavaScript to handle company selection
-    st.components.v1.html("""
-    <script>
-    window.addEventListener('message', function(event) {
-        if (event.data.type === 'company_selected') {
-            const data = {
-                company: event.data.company,
-                sessionState: { selected_company: event.data.company }
-            };
-            window.parent.postMessage({type: 'streamlit:set_widget_value', data: data}, '*');
-        }
-    }, false);
-    </script>
-    """)
-
-    # Handle company selection
-    if 'selected_company' not in st.session_state:
-        st.session_state.selected_company = None
-
-    company_name = st.session_state.get('selected_company')
     if company_name:
-        company_data = df[df['Company'] == company_name].iloc[0]
-        selected_company.write(f"**Company:** {company_name}")
-        st.write(f"**Description:** {company_data['description']}")
-        st.write(f"**Location:** {company_data['Location']}")
-        st.write(f"**Employees:** {company_data['Employees']}")
-        st.write(f"**Stage:** {company_data['Stage']}")
-        st.write(f"**Website:** {company_data['Website']}")
-        st.write(f"**Investors:** {company_data['Investors']}")
-        st.write(f"**Comments:** {company_data['Comments']}")
-        st.image(company_data['Logo'], width=100)
+        # Get the company data
+        company_row = df[df['Company'] == company_name]
+        if not company_row.empty:
+            company_data = company_row.iloc[0]
+            st.write(f"**Company:** {company_name}")
+            st.write(f"**Description:** {company_data['description']}")
+            st.write(f"**Location:** {company_data['Location']}")
+            st.write(f"**Employees:** {company_data['Employees']}")
+            st.write(f"**Stage:** {company_data['Stage']}")
+            st.write(f"**Website:** [{company_data['Website']}]({company_data['Website']})")
+            st.write(f"**Investors:** {company_data['Investors']}")
+            st.write(f"**Comments:** {company_data['Comments']}")
+            st.image(company_data['Logo'], width=100)
+        else:
+            st.warning("Company details not found.")
+    else:
+        st.write("Click on a company logo to see its details.")
 
 if __name__ == "__main__":
     main()
