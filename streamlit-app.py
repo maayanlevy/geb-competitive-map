@@ -159,7 +159,7 @@ def create_competitive_map(df):
 
     bucket_positions = {
         "Customized AI": (25, 30),
-        "Enterprise Search": (15, 80),
+        "Enterprise Search": (20, 80),
         "Out of the Box Agents": (10, 80),
         "Vertical AI": (30, 60),
         "UI Models": (60, 60),
