@@ -162,16 +162,19 @@ def main():
         st.warning("No data available. Please check your Google Sheets connection.")
         return
 
+    # Filter out companies with "ignore" in their bucket
+    if 'bucket' in df.columns:
+        non_ignored_companies = df[df['bucket'].str.lower() != 'ignore']
+    else:
+        non_ignored_companies = df
+    
     # Select the first non-ignored company by default
-    if st.session_state.selected_company is None:
-        # Assuming 'Ignore' column exists and is boolean (True for ignored companies)
-        non_ignored_companies = df[df['Ignore'] != True]
-        if not non_ignored_companies.empty:
-            st.session_state.selected_company = non_ignored_companies.iloc[0]['Company']
+    if st.session_state.selected_company is None and not non_ignored_companies.empty:
+        st.session_state.selected_company = non_ignored_companies.iloc[0]['Company']
 
     # Create and display the competitive map
     st.subheader("Competitive Map")
-    map_html = create_competitive_map(df)
+    map_html = create_competitive_map(non_ignored_companies)  # Only pass non-ignored companies
     st.components.v1.html(map_html, height=650, scrolling=False)
 
     # Add JavaScript to handle messages from the iframe
@@ -222,7 +225,7 @@ def main():
         else:
             st.warning("Company details not found.")
     else:
-        st.write("No company selected or all companies are ignored.")
+        st.write("No company selected.")
 
 if __name__ == "__main__":
     main()
