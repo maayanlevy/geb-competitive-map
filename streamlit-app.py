@@ -52,6 +52,7 @@ def create_competitive_map(df):
             flex-direction: column;
             height: 600px;
             border: 1px solid #ddd;
+            position: relative;
         }
         .row {
             display: flex;
@@ -63,12 +64,6 @@ def create_competitive_map(df):
             padding: 10px;
             display: flex;
             flex-direction: column;
-        }
-        .category-box {
-            background-color: #f0f0f0;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
         }
         .companies-container {
             display: flex;
@@ -92,6 +87,66 @@ def create_competitive_map(df):
             margin: 5px 0;
             font-size: 12px;
         }
+        .axis {
+            position: absolute;
+            background-color: #000;
+        }
+        .x-axis {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            left: 0;
+        }
+        .y-axis {
+            width: 2px;
+            height: 100%;
+            top: 0;
+            left: 50%;
+        }
+        .arrow {
+            width: 0;
+            height: 0;
+            border-style: solid;
+            position: absolute;
+        }
+        .x-arrow {
+            border-width: 5px 0 5px 10px;
+            border-color: transparent transparent transparent #000;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+        }
+        .y-arrow {
+            border-width: 0 5px 10px 5px;
+            border-color: transparent transparent #000 transparent;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+        .axis-label {
+            position: absolute;
+            font-size: 12px;
+        }
+        .x-label-left {
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .x-label-right {
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .y-label-top {
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .y-label-bottom {
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
     </style>
     <div class="map-container">
     """
@@ -105,9 +160,6 @@ def create_competitive_map(df):
                 map_html += f'''
                 <div class="quadrant">
                     <h3>{bucket}</h3>
-                    <div class="category-box">
-                        <h4>Category: {bucket}</h4>
-                    </div>
                     <div class="companies-container">
                 '''
                 for _, company in bucket_data.iterrows():
@@ -116,6 +168,14 @@ def create_competitive_map(df):
         map_html += '</div>'
 
     map_html += """
+        <div class="axis x-axis"></div>
+        <div class="axis y-axis"></div>
+        <div class="arrow x-arrow"></div>
+        <div class="arrow y-arrow"></div>
+        <div class="axis-label x-label-left">Generic</div>
+        <div class="axis-label x-label-right">My processes</div>
+        <div class="axis-label y-label-top">Model reasoning</div>
+        <div class="axis-label y-label-bottom">My reasoning</div>
     </div>
     """
     return map_html
