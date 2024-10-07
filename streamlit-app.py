@@ -181,11 +181,8 @@ def create_competitive_map(df):
     <script>
     function selectCompany(companyName) {
         console.log("selectCompany called with:", companyName);
-        if (window.Streamlit) {
-            Streamlit.setComponentValue(companyName);
-        } else {
-            console.error("Streamlit object not found");
-        }
+        const event = new CustomEvent('company-selected', { detail: companyName });
+        window.parent.document.dispatchEvent(event);
     }
     </script>
     """
@@ -193,22 +190,22 @@ def create_competitive_map(df):
 
 import streamlit.components.v1 as components
 
-def handle_custom_events():
-    component_value = components.declare_component(
-        "custom_events",
-        path=None,
+def setup_custom_event_listener():
+    event_placeholder = st.empty()
+    event_placeholder.markdown(
+        """
+        <div id="event-catcher"></div>
+        <script>
+        const eventCatcher = window.parent.document.getElementById('event-catcher');
+        window.parent.document.addEventListener('company-selected', function(event) {
+            eventCatcher.textContent = event.detail;
+            console.log("Company selected:", event.detail);
+        });
+        </script>
+        """,
+        unsafe_allow_html=True
     )
-    
-    selected_company = component_value(key="custom_events")
-    if selected_company:
-        print(f"Debug: handle_custom_events received {selected_company}")
-    return selected_company
-
-# In the main() function, replace the existing handle_custom_events() call with:
-selected_company = handle_custom_events()
-if selected_company:
-    st.session_state.selected_company = selected_company
-    st.rerun()
+    return event_placeholder
 
 # Main Streamlit app
 def main():
@@ -229,11 +226,12 @@ def main():
     map_html = create_competitive_map(df)
     st.components.v1.html(map_html, height=650, scrolling=True)
 
-    # Handle custom events
-    selected_company = handle_custom_events()
-    st.write("Debug - selected_company:", selected_company)
+    # Setup custom event listener
+    event_placeholder = setup_custom_event_listener()
 
-    if selected_company:
+    # Check for selected company
+    selected_company = event_placeholder.markdown.kwargs['body'].split('>')[1].split('<')[0]
+    if selected_company and selected_company != st.session_state.selected_company:
         st.session_state.selected_company = selected_company
         st.rerun()
 
