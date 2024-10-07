@@ -4,7 +4,7 @@ import urllib.parse
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-import streamlit.components.v1 as components
+import streamlit.components as components
 
 # Configure Streamlit page
 st.set_page_config(layout="wide", page_title="Competitive Map")
@@ -180,6 +180,7 @@ def create_competitive_map(df):
     </div>
     <script>
     function selectCompany(companyName) {
+        console.log("selectCompany called with:", companyName);
         const data = {
             company: companyName
         };
@@ -189,24 +190,40 @@ def create_competitive_map(df):
             headers: {
                 "Content-Type": "application/json"
             }
-        });
+        }).then(response => console.log("Fetch response:", response))
+          .catch(error => console.error("Fetch error:", error));
     }
     </script>
     """
     return map_html
 
 def handle_custom_events():
-    custom_events = components.html(
+    custom_events = components.v1.html(
         """
         <script>
         const doc = window.parent.document;
+        console.log("Custom events script loaded");
         const observer = new MutationObserver(() => {
-            const data = JSON.parse(doc.querySelector('#custom-events').textContent);
-            if (data && data.company) {
-                Streamlit.setComponentValue(data.company);
+            console.log("Mutation observed");
+            const customEventsElement = doc.querySelector('#custom-events');
+            if (customEventsElement) {
+                const data = JSON.parse(customEventsElement.textContent);
+                console.log("Parsed data:", data);
+                if (data && data.company) {
+                    console.log("Setting component value:", data.company);
+                    Streamlit.setComponentValue(data.company);
+                }
+            } else {
+                console.log("Custom events element not found");
             }
         });
-        observer.observe(doc.querySelector('#custom-events'), {childList: true});
+        const customEventsElement = doc.querySelector('#custom-events');
+        if (customEventsElement) {
+            observer.observe(customEventsElement, {childList: true});
+            console.log("Observer set up");
+        } else {
+            console.log("Custom events element not found for observer setup");
+        }
         </script>
         <div id="custom-events"></div>
         """,
@@ -234,12 +251,22 @@ def main():
     st.components.v1.html(map_html, height=650, scrolling=True)
 
     # Handle custom events
+    custom_events = handle_custom_events()
+    st.write("Debug - custom_events:", custom_events)
+
+    if custom_events:
+        st.session_state.selected_company = custom_events
+        st.write("Debug - Updated selected_company:", st.session_state.selected_company)
+
+    # Check if selected company has changed
     if st.session_state.selected_company != st.session_state.get('_last_selected_company'):
+        st.write("Debug - Company selection changed")
         st.session_state['_last_selected_company'] = st.session_state.selected_company
         st.rerun()
 
     # Company details section
     st.subheader("Company Details")
+    st.write("Debug - Current selected_company:", st.session_state.selected_company)
 
     if st.session_state.selected_company:
         company_name = st.session_state.selected_company
