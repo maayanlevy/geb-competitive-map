@@ -50,11 +50,12 @@ def create_competitive_map(df):
     }
     .company-logo {
         position: absolute;
-        width: 80px;
-        height: 80px;
-        background-size: contain;
+        width: 60px;
+        height: 60px;
+        background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
+        border-radius: 50%;
         cursor: pointer;
         transition: transform 0.2s;
         text-align: center;
@@ -67,6 +68,10 @@ def create_competitive_map(df):
         transform: scale(1.1);
     }
     .company-name {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
         background-color: rgba(255, 255, 255, 0.7);
         padding: 2px 4px;
         border-radius: 3px;
@@ -96,6 +101,12 @@ def create_competitive_map(df):
         font-size: 14px;
         color: #008080;
         font-weight: bold;
+    }
+    .bucket-area {
+        position: absolute;
+        border: 2px solid #008080;
+        border-radius: 15px;
+        padding: 10px;
     }
     </style>
     <div class="competitive-map">
@@ -136,25 +147,28 @@ def create_competitive_map(df):
 
     # Add bucket labels and company logos
     bucket_positions = {
-        "Customized AI": (70, 30),
-        "Enterprise Search": (30, 70),
-        "Out of the Box Agents": (50, 50),
-        "Vertical AI": (30, 30),
-        "UI Models": (70, 70),
-        "Reasoning Models": (50, 80),
-        "DIY AI": (80, 50)
+        "Customized AI": (70, 30, 20, 20),
+        "Enterprise Search": (30, 70, 20, 20),
+        "Out of the Box Agents": (20, 80, 20, 20),
+        "Vertical AI": (30, 30, 20, 20),
+        "UI Models": (70, 70, 20, 20),
+        "Reasoning Models": (50, 80, 20, 20),
+        "DIY AI": (80, 50, 20, 20)
     }
 
-    for bucket, (bucket_x, bucket_y) in bucket_positions.items():
-        map_html += f'<div class="bucket-label" style="left: {bucket_x}%; top: {bucket_y}%;">{bucket}</div>'
+    for bucket, (bucket_x, bucket_y, width, height) in bucket_positions.items():
+        map_html += f"""
+        <div class="bucket-area" style="left: {bucket_x}%; top: {bucket_y}%; width: {width}%; height: {height}%;">
+            <div class="bucket-label">{bucket}</div>
+        """
         
         bucket_companies = df[df['bucket'] == bucket]
         company_count = len(bucket_companies)
         for i, (_, company) in enumerate(bucket_companies.iterrows()):
             angle = 2 * 3.14159 * i / company_count
-            radius = 10  # Adjust this value to change the spread of companies around the bucket label
-            x = bucket_x + radius * math.cos(angle)
-            y = bucket_y + radius * math.sin(angle)
+            radius = 8  # Adjust this value to change the spread of companies within the bucket
+            x = 50 + radius * math.cos(angle)
+            y = 50 + radius * math.sin(angle)
             company_name = company['Company']
             logo_url = company['Logo']
             map_html += f"""
@@ -163,6 +177,8 @@ def create_competitive_map(df):
                 <span class="company-name">{company_name}</span>
             </div>
             """
+        
+        map_html += "</div>"
 
     map_html += """
     </div>
