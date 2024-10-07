@@ -202,25 +202,37 @@ def main():
 
     # Company details section
     st.subheader("Company Details")
+    
+    # Create two columns
+    col1, col2 = st.columns([1, 2])
+
     if company_name:
         # Get the company data
         company_row = df[df['Company'] == company_name]
         if not company_row.empty:
             company_data = company_row.iloc[0]
 
-            st.write(f"**Company:** {company_name}")
-            st.write(f"**Description:** {company_data['description']}")
-            st.write(f"**Location:** {company_data['Location']}")
-            st.write(f"**Employees:** {company_data['Employees']}")
-            st.write(f"**Stage:** {company_data['Stage']}")
-            st.write(f"**Website:** [{company_data['Website']}]({company_data['Website']})")
-            st.write(f"**Investors:** {company_data['Investors']}")
-            st.write(f"**Comments:** {company_data['Comments']}")
-            st.image(company_data['Logo'], width=100)
+            # Display logo in the first column
+            with col1:
+                st.image(company_data['Logo'], width=100)
+
+            # Display company details in the second column
+            with col2:
+                st.write(f"**Company:** {company_name}")
+                st.write(f"**Description:** {company_data['description']}")
+                st.write(f"**Location:** {company_data['Location']}")
+                st.write(f"**Employees:** {company_data['Employees']}")
+                st.write(f"**Stage:** {company_data['Stage']}")
+                st.write(f"**Website:** [{company_data['Website']}]({company_data['Website']})")
+                st.write(f"**Investors:** {company_data['Investors']}")
+                st.write(f"**Comments:** {company_data['Comments']}")
         else:
             st.warning("Company details not found.")
     else:
         st.write("Click on a company logo to see its details.")
+
+    # Clear the query parameters after displaying the details
+    st.experimental_set_query_params()
 
 if __name__ == "__main__":
     main()
