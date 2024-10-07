@@ -144,44 +144,42 @@ def create_competitive_map(df):
 
     # Calculate bucket sizes based on company count
     bucket_counts = df['bucket'].value_counts()
-    max_companies = bucket_counts.max()
-    base_size = 15  # Base size for a bucket with one company
-    size_increment = 5  # Size increment for each additional company
 
     bucket_positions = {
-        "Customized AI": (70, 30),
-        "Enterprise Search": (30, 70),
-        "Out of the Box Agents": (20, 80),
-        "Vertical AI": (30, 30),
+        "Customized AI": (25, 25),
+        "Enterprise Search": (15, 60),
+        "Out of the Box Agents": (10, 85),
+        "Vertical AI": (30, 70),
         "UI Models": (70, 70),
-        "Reasoning Models": (50, 80),
-        "DIY AI": (80, 50)
+        "Reasoning Models": (60, 85),
+        "DIY AI": (75, 25)
     }
 
     for bucket, (bucket_x, bucket_y) in bucket_positions.items():
         company_count = bucket_counts.get(bucket, 0)
-        width = base_size + size_increment * min(company_count, max_companies)
-        height = base_size + size_increment * min(company_count, max_companies)
+        
+        # Calculate bucket size based on company count
+        cols = min(3, company_count)
+        rows = math.ceil(company_count / cols)
+        width = max(cols * 60 + 20, 120)  # 60px per logo, 20px padding
+        height = rows * 60 + 40  # 60px per logo, 40px padding for label
 
         map_html += f"""
-        <div class="bucket-area" style="left: {bucket_x}%; top: {bucket_y}%; width: {width}%; height: {height}%;">
+        <div class="bucket-area" style="left: {bucket_x}%; top: {bucket_y}%; width: {width}px; height: {height}px;">
             <div class="bucket-label">{bucket} ({company_count})</div>
         """
         
         bucket_companies = df[df['bucket'] == bucket]
         if company_count > 0:
-            rows = math.ceil(math.sqrt(company_count))
-            cols = math.ceil(company_count / rows)
-            
             for i, (_, company) in enumerate(bucket_companies.iterrows()):
                 row = i // cols
                 col = i % cols
-                x = 10 + (col * 80 / cols)  # 10% padding, 80% for logos
-                y = 20 + (row * 70 / rows)  # 20% padding for label, 70% for logos
+                x = 10 + (col * 60)
+                y = 30 + (row * 60)
                 company_name = company['Company']
                 logo_url = company['Logo']
                 map_html += f"""
-                <div class="company-logo" style="left: {x}%; top: {y}%; background-image: url('{logo_url}');"
+                <div class="company-logo" style="left: {x}px; top: {y}px; background-image: url('{logo_url}');"
                      onclick="selectCompany('{company_name}');" title="{company_name}">
                     <span class="company-name">{company_name}</span>
                 </div>
