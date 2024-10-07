@@ -20,7 +20,7 @@ def fetch_data():
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
         result = sheet.values().get(
-            spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA',  # Replace with your actual Spreadsheet ID
+            spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA',
             range='Sheet1'
         ).execute()
         data = result.get('values', [])
@@ -154,7 +154,6 @@ def create_competitive_map(df):
     </style>
     <div class="map-container">
     """
-
     for i in range(0, 4, 2):
         map_html += '<div class="row">'
         for j in range(2):
@@ -171,7 +170,6 @@ def create_competitive_map(df):
                     map_html += create_company_card(company)
                 map_html += '</div></div>'
         map_html += '</div>'
-
     # Add axes and labels
     map_html += """
         <div class="axis x-axis"></div>
@@ -217,7 +215,8 @@ def main():
     selected_company = st.components.v1.html(map_html, height=650, scrolling=True)
 
     # Debug: Display selected company from HTML component
-    st.write("**Selected Company from HTML Component:**", selected_company)
+    if selected_company:
+        st.write("**Selected Company from HTML Component:**", selected_company)
 
     # Update session state if a company was selected
     if selected_company:
