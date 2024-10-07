@@ -4,6 +4,7 @@ import urllib.parse
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import streamlit.components.v1 as components
 
 # Configure Streamlit page
 st.set_page_config(layout="wide", page_title="Competitive Map")
@@ -179,8 +180,16 @@ def create_competitive_map(df):
     </div>
     <script>
     function selectCompany(companyName) {
-        // Send the selected company name to Streamlit
-        Streamlit.setComponentValue(companyName);
+        const data = {
+            company: companyName
+        };
+        fetch("/_stcore/stream", {
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
     }
     </script>
     """
@@ -201,23 +210,14 @@ def main():
         st.warning("No data available. Please check your Google Sheets connection.")
         return
 
-    # Debug: Display DataFrame columns and first few rows
-    st.write("**DataFrame Columns:**", df.columns.tolist())
-    st.write("**DataFrame Sample:**")
-    st.dataframe(df.head())
-
     # Create and display the competitive map
     map_html = create_competitive_map(df)
     st.components.v1.html(map_html, height=650, scrolling=True)
 
-    # Check if a company was selected
-    if st.session_state.get('selected_company') != st.session_state.get('_last_selected_company'):
-        st.session_state['_last_selected_company'] = st.session_state.get('selected_company')
+    # Handle custom events
+    if st.session_state.selected_company != st.session_state.get('_last_selected_company'):
+        st.session_state['_last_selected_company'] = st.session_state.selected_company
         st.rerun()
-
-    # Debug: Display selected company
-    if st.session_state.get('selected_company'):
-        st.write("**Selected Company:**", st.session_state.get('selected_company'))
 
     # Company details section
     st.subheader("Company Details")
@@ -225,41 +225,35 @@ def main():
     if st.session_state.selected_company:
         company_name = st.session_state.selected_company
         if 'Company' in df.columns:
-            # Ensure company_name is a string
-            if isinstance(company_name, str):
-                company_row = df[df['Company'].str.strip().str.lower() == company_name.strip().lower()]
+            company_row = df[df['Company'].str.strip().str.lower() == company_name.strip().lower()]
+            
+            if not company_row.empty:
+                company_data = company_row.iloc[0]
+                
+                # Display company details
+                col1, col2 = st.columns([1, 3])
+                with col1:
+                    st.image(company_data['Logo'], width=100)
+                with col2:
+                    st.markdown(f"**Company:** {company_name}")
+                    st.markdown(f"**Description:** {company_data.get('description', 'N/A')}")
+                    st.markdown(f"**Location:** {company_data.get('Location', 'N/A')}")
+                    st.markdown(f"**Employees:** {company_data.get('Employees', 'N/A')}")
+                    st.markdown(f"**Stage:** {company_data.get('Stage', 'N/A')}")
+                    st.markdown(f"**Website:** [{company_data.get('Website', '')}]({company_data.get('Website', '')})")
+                    st.markdown(f"**Investors:** {company_data.get('Investors', 'N/A')}")
+                    st.markdown(f"**Comments:** {company_data.get('Comments', 'N/A')}")
             else:
-                st.error("Selected company name is not a valid string.")
-                return
+                st.warning("Company details not found.")
         else:
             st.error("The 'Company' column is missing in the data.")
-            return
-
-        # Debug: Display selected company name and matching rows
-        st.write(f"**Selected Company Name:** {company_name}")
-        st.write("**Matching Rows:**")
-        st.dataframe(company_row)
-
-        if not company_row.empty:
-            company_data = company_row.iloc[0]
-
-            # Display logo and company details
-            col1, col2 = st.columns([1, 3])
-            with col1:
-                st.image(company_data['Logo'], width=100)
-            with col2:
-                st.markdown(f"**Company:** {company_name}")
-                st.markdown(f"**Description:** {company_data.get('description', 'N/A')}")
-                st.markdown(f"**Location:** {company_data.get('Location', 'N/A')}")
-                st.markdown(f"**Employees:** {company_data.get('Employees', 'N/A')}")
-                st.markdown(f"**Stage:** {company_data.get('Stage', 'N/A')}")
-                st.markdown(f"**Website:** [{company_data.get('Website', '')}]({company_data.get('Website', '')})")
-                st.markdown(f"**Investors:** {company_data.get('Investors', 'N/A')}")
-                st.markdown(f"**Comments:** {company_data.get('Comments', 'N/A')}")
-        else:
-            st.warning("Company details not found.")
     else:
         st.write("Click on a company logo to see its details.")
+
+    # Add custom event handling
+    custom_events = handle_custom_events()
+    if custom_events:
+        st.session_state.selected_company = custom_events
 
 if __name__ == "__main__":
     main()
