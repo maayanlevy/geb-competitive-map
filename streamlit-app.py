@@ -6,6 +6,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import streamlit.components as components
 import base64
+import math
 
 # Configure Streamlit page
 st.set_page_config(layout="wide", page_title="Competitive Map")
@@ -36,6 +37,7 @@ def fetch_data():
         st.error(f"An error occurred: {err}")
         return pd.DataFrame()
 
+
 def create_competitive_map(df):
     map_html = """
     <style>
@@ -44,22 +46,35 @@ def create_competitive_map(df):
         width: 100%;
         height: 600px;
         background-color: #ffffff;
-        border: 1px solid #ccc;
         font-family: Arial, sans-serif;
     }
     .company-logo {
         position: absolute;
-        padding: 5px 10px;
-        background-color: #ffffff;
-        border: 1px solid #008080;
-        border-radius: 5px;
-        font-size: 12px;
-        color: #008080;
+        width: 80px;
+        height: 80px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
         cursor: pointer;
         transition: transform 0.2s;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
     }
     .company-logo:hover {
         transform: scale(1.1);
+    }
+    .company-name {
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 10px;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     .axis-label {
         position: absolute;
@@ -75,6 +90,12 @@ def create_competitive_map(df):
         position: absolute;
         font-size: 16px;
         color: #A9A9A9;
+    }
+    .bucket-label {
+        position: absolute;
+        font-size: 14px;
+        color: #008080;
+        font-weight: bold;
     }
     </style>
     <div class="competitive-map">
@@ -113,15 +134,35 @@ def create_competitive_map(df):
     for label, x, y in main_labels:
         map_html += f'<div class="main-label" style="left: {x}%; top: {y}%;">{label}</div>'
 
-    # Add company logos
-    for _, company in df.iterrows():
-        x = company.get('x', 50)  # Default to center if not specified
-        y = company.get('y', 50)  # Default to center if not specified
-        company_name = company['Company']
-        map_html += f"""
-        <div class="company-logo" style="left: {x}%; top: {y}%;"
-             onclick="selectCompany('{company_name}');" title="{company_name}">{company_name}</div>
-        """
+    # Add bucket labels and company logos
+    bucket_positions = {
+        "Customized AI": (70, 30),
+        "Enterprise Search": (30, 70),
+        "Out of the Box Agents": (50, 50),
+        "Vertical AI": (30, 30),
+        "UI Models": (70, 70),
+        "Reasoning Models": (50, 80),
+        "DIY AI": (80, 50)
+    }
+
+    for bucket, (bucket_x, bucket_y) in bucket_positions.items():
+        map_html += f'<div class="bucket-label" style="left: {bucket_x}%; top: {bucket_y}%;">{bucket}</div>'
+        
+        bucket_companies = df[df['bucket'] == bucket]
+        company_count = len(bucket_companies)
+        for i, (_, company) in enumerate(bucket_companies.iterrows()):
+            angle = 2 * 3.14159 * i / company_count
+            radius = 10  # Adjust this value to change the spread of companies around the bucket label
+            x = bucket_x + radius * math.cos(angle)
+            y = bucket_y + radius * math.sin(angle)
+            company_name = company['Company']
+            logo_url = company['Logo']
+            map_html += f"""
+            <div class="company-logo" style="left: {x}%; top: {y}%; background-image: url('{logo_url}');"
+                 onclick="selectCompany('{company_name}');" title="{company_name}">
+                <span class="company-name">{company_name}</span>
+            </div>
+            """
 
     map_html += """
     </div>
