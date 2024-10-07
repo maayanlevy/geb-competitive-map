@@ -50,8 +50,8 @@ def create_competitive_map(df):
     }
     .company-logo {
         position: absolute;
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
@@ -80,6 +80,7 @@ def create_competitive_map(df):
         position: absolute;
         font-weight: bold;
         color: #FFA500;
+        font-size: 14px;
     }
     .sub-label {
         position: absolute;
@@ -105,8 +106,18 @@ def create_competitive_map(df):
         border-radius: 15px;
         padding: 10px;
     }
+    .axis-line {
+        position: absolute;
+        background-color: #A9A9A9;
+    }
     </style>
     <div class="competitive-map">
+    """
+
+    # Add axis lines
+    map_html += """
+    <div class="axis-line" style="left: 50%; top: 0; width: 2px; height: 100%;"></div>
+    <div class="axis-line" style="left: 0; top: 50%; width: 100%; height: 2px;"></div>
     """
 
     # Add axis labels
@@ -162,12 +173,12 @@ def create_competitive_map(df):
         if company_count > 0:
             cols = min(3, company_count)
             rows = math.ceil(company_count / cols)
-            width = max(cols * 60 + 20, 120)  # 60px per logo, 20px padding
-            height = rows * 60 + 40  # 60px per logo, 40px padding for label
+            width = max(cols * 50 + 20, 100)  # 50px per logo, 20px padding
+            height = rows * 50 + 40  # 50px per logo, 40px padding for label
         else:
             # Default size for empty buckets
-            width = 120
-            height = 60
+            width = 100
+            height = 50
 
         map_html += f"""
         <div class="bucket-area" style="left: {bucket_x}%; top: {bucket_y}%; width: {width}px; height: {height}px;">
@@ -180,8 +191,8 @@ def create_competitive_map(df):
             for i, (_, company) in enumerate(bucket_companies.iterrows()):
                 row = i // cols
                 col = i % cols
-                x = 10 + (col * 60)
-                y = 30 + (row * 60)
+                x = 10 + (col * 50)
+                y = 30 + (row * 50)
                 company_name = company['Company']
                 logo_url = company['Logo']
                 map_html += f"""
@@ -244,7 +255,7 @@ def main():
 
     # Create and display the competitive map
     st.subheader("Competitive Map")
-    map_html = create_competitive_map(non_ignored_companies)  # Only pass non-ignored companies
+    map_html = create_competitive_map(non_ignored_companies)
     st.components.v1.html(map_html, height=650, scrolling=False)
 
     # Add JavaScript to handle messages from the iframe
@@ -267,17 +278,7 @@ def main():
     # Hidden input and button to update selected company
     selected_company = st.empty()
     new_selection = selected_company.text_input("Selected Company", key="selected-company-input", label_visibility="hidden")
-    
-    # Hide the update button using CSS
-    st.markdown("""
-        <style>
-        #update-button {
-            display: none;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-    
-    update_button = st.button("Update", key="update-button")
+    update_button = st.button("Update", key="update-button", style="display: none;")
 
     if update_button and new_selection != st.session_state.selected_company:
         st.session_state.selected_company = new_selection
@@ -308,6 +309,9 @@ def main():
             st.warning("Company details not found.")
     else:
         st.write("No company selected.")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
