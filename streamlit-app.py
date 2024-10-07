@@ -50,19 +50,14 @@ def create_competitive_map(df):
     }
     .company-logo {
         position: absolute;
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
         border-radius: 50%;
         cursor: pointer;
         transition: transform 0.2s;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        align-items: center;
     }
     .company-logo:hover {
         transform: scale(1.1);
@@ -75,7 +70,7 @@ def create_competitive_map(df):
         background-color: rgba(255, 255, 255, 0.7);
         padding: 2px 4px;
         border-radius: 3px;
-        font-size: 10px;
+        font-size: 8px;
         max-width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -101,6 +96,8 @@ def create_competitive_map(df):
         font-size: 14px;
         color: #008080;
         font-weight: bold;
+        top: 5px;
+        left: 5px;
     }
     .bucket-area {
         position: absolute;
@@ -145,30 +142,41 @@ def create_competitive_map(df):
     for label, x, y in main_labels:
         map_html += f'<div class="main-label" style="left: {x}%; top: {y}%;">{label}</div>'
 
-    # Add bucket labels and company logos
+    # Calculate bucket sizes based on company count
+    bucket_counts = df['bucket'].value_counts()
+    max_companies = bucket_counts.max()
+    base_size = 15  # Base size for a bucket with one company
+    size_increment = 5  # Size increment for each additional company
+
     bucket_positions = {
-        "Customized AI": (70, 30, 20, 20),
-        "Enterprise Search": (30, 70, 20, 20),
-        "Out of the Box Agents": (20, 80, 20, 20),
-        "Vertical AI": (30, 30, 20, 20),
-        "UI Models": (70, 70, 20, 20),
-        "Reasoning Models": (50, 80, 20, 20),
-        "DIY AI": (80, 50, 20, 20)
+        "Customized AI": (70, 30),
+        "Enterprise Search": (30, 70),
+        "Out of the Box Agents": (20, 80),
+        "Vertical AI": (30, 30),
+        "UI Models": (70, 70),
+        "Reasoning Models": (50, 80),
+        "DIY AI": (80, 50)
     }
 
-    for bucket, (bucket_x, bucket_y, width, height) in bucket_positions.items():
+    for bucket, (bucket_x, bucket_y) in bucket_positions.items():
+        company_count = bucket_counts.get(bucket, 0)
+        width = base_size + size_increment * min(company_count, max_companies)
+        height = base_size + size_increment * min(company_count, max_companies)
+
         map_html += f"""
         <div class="bucket-area" style="left: {bucket_x}%; top: {bucket_y}%; width: {width}%; height: {height}%;">
-            <div class="bucket-label">{bucket}</div>
+            <div class="bucket-label">{bucket} ({company_count})</div>
         """
         
         bucket_companies = df[df['bucket'] == bucket]
-        company_count = len(bucket_companies)
+        rows = math.ceil(math.sqrt(company_count))
+        cols = math.ceil(company_count / rows)
+        
         for i, (_, company) in enumerate(bucket_companies.iterrows()):
-            angle = 2 * 3.14159 * i / company_count
-            radius = 8  # Adjust this value to change the spread of companies within the bucket
-            x = 50 + radius * math.cos(angle)
-            y = 50 + radius * math.sin(angle)
+            row = i // cols
+            col = i % cols
+            x = 10 + (col * 80 / cols)  # 10% padding, 80% for logos
+            y = 20 + (row * 70 / rows)  # 20% padding for label, 70% for logos
             company_name = company['Company']
             logo_url = company['Logo']
             map_html += f"""
