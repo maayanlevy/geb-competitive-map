@@ -93,12 +93,10 @@ def create_competitive_map(df):
         color: #A9A9A9;
     }
     .bucket-label {
-        position: absolute;
         font-size: 14px;
         color: #008080;
         font-weight: normal;
         margin:0 auto;
-        text-align: center;
     }
     .bucket-area {
         position: absolute;
