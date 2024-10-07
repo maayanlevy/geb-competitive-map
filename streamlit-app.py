@@ -103,7 +103,7 @@ def create_competitive_map(df):
         position: absolute;
         border: 1px solid #008080;
         border-radius: 15px;
-        padding: 10px;
+        padding: 5px 5px 0px;
     }
     .axis-line {
         position: absolute;
