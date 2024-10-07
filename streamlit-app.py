@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-import os
+from googleapiclient.errors import HttpError
 
 # Configure Streamlit page
 st.set_page_config(layout="wide", page_title="Competitive Map")
@@ -16,62 +15,81 @@ creds = service_account.Credentials.from_service_account_info(
 
 # Function to fetch data from Google Sheets
 def fetch_data():
-    service = build('sheets', 'v4', credentials=creds)
-    sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA', range='Sheet1').execute()
-    data = result.get('values', [])
-    df = pd.DataFrame(data[1:], columns=data[0])
-    return df
-
-# Function to create the competitive map
-def create_competitive_map(df):
-    fig = go.Figure()
-
-    buckets = ['Zero Reasoning', 'DIY Reasoning', 'Customized reasoning', 'Reasoning Models']
-    colors = ['rgb(141, 211, 199)', 'rgb(255, 255, 179)', 'rgb(190, 186, 218)', 'rgb(251, 128, 114)']
-
-    for i, bucket in enumerate(buckets):
-        bucket_data = df[df['bucket'] == bucket]
-        x = [0.25 + (i % 2) * 0.5] * len(bucket_data)
-        y = [0.25 + (i // 2) * 0.5] * len(bucket_data)
-        
-        fig.add_trace(go.Scatter(
-            x=x,
-            y=y,
-            mode='markers+text',
-            marker=dict(size=50, color=colors[i], opacity=0.6),
-            text=bucket_data['Company'],
-            textposition="top center",
-            hoverinfo='text',
-            name=bucket
-        ))
-
-    fig.update_layout(
-        showlegend=False,
-        height=600,
-        xaxis=dict(range=[0, 1], showgrid=False, zeroline=False, visible=False),
-        yaxis=dict(range=[0, 1], showgrid=False, zeroline=False, visible=False),
-        annotations=[
-            dict(x=0.25, y=1, xref="paper", yref="paper", text="Generic", showarrow=False),
-            dict(x=0.75, y=1, xref="paper", yref="paper", text="My processes", showarrow=False),
-            dict(x=0, y=0.75, xref="paper", yref="paper", text="Model reasoning", showarrow=False, textangle=-90),
-            dict(x=0, y=0.25, xref="paper", yref="paper", text="My reasoning", showarrow=False, textangle=-90)
-        ]
-    )
-
-    return fig
+    try:
+        service = build('sheets', 'v4', credentials=creds)
+        sheet = service.spreadsheets()
+        result = sheet.values().get(spreadsheetId='1CSkJwokWSGwJDRkUMLokv0CI9ENXUWi9qjbvzGoIjSA', 
+                                    range='Sheet1').execute()
+        data = result.get('values', [])
+        df = pd.DataFrame(data[1:], columns=data[0])
+        return df
+    except HttpError as err:
+        st.error(f"An error occurred: {err}")
+        return pd.DataFrame()
 
 # Function to create company card
 def create_company_card(company_data):
-    st.subheader(company_data['Company'])
-    st.write(f"**Description:** {company_data['description']}")
-    st.write(f"**Location:** {company_data['Location']}")
-    st.write(f"**Employees:** {company_data['Employees']}")
-    st.write(f"**Stage:** {company_data['Stage']}")
-    st.write(f"**Website:** {company_data['Website']}")
-    st.write(f"**Investors:** {company_data['Investors']}")
-    st.write(f"**Comments:** {company_data['Comments']}")
-    st.image(company_data['Logo'], width=100)
+    return f"""
+    <div class="company-card" onclick="showDetails('{company_data['Company']}')">
+        <img src="{company_data['Logo']}" alt="{company_data['Company']} logo" style="width:50px; height:50px; object-fit:contain;">
+        <p>{company_data['Company']}</p>
+    </div>
+    """
+
+# Function to create the competitive map
+def create_competitive_map(df):
+    buckets = ['Zero Reasoning', 'DIY Reasoning', 'Customized reasoning', 'Reasoning Models']
+    map_html = """
+    <style>
+        .map-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            border: 1px solid #ddd;
+        }
+        .row {
+            display: flex;
+            flex: 1;
+        }
+        .quadrant {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .company-card {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .company-card img {
+            margin-right: 10px;
+        }
+    </style>
+    <div class="map-container">
+    """
+    
+    for i in range(0, 4, 2):
+        map_html += '<div class="row">'
+        for j in range(2):
+            bucket = buckets[i+j]
+            bucket_data = df[df['bucket'] == bucket]
+            map_html += f'<div class="quadrant"><h3>{bucket}</h3>'
+            for _, company in bucket_data.iterrows():
+                map_html += create_company_card(company)
+            map_html += '</div>'
+        map_html += '</div>'
+    
+    map_html += """
+    </div>
+    <script>
+    function showDetails(company) {
+        window.parent.postMessage({type: 'company_selected', company: company}, '*');
+    }
+    </script>
+    """
+    return map_html
 
 # Main Streamlit app
 def main():
@@ -80,19 +98,40 @@ def main():
     # Fetch data
     df = fetch_data()
 
-    # Create competitive map
-    fig = create_competitive_map(df)
+    if df.empty:
+        st.warning("No data available. Please check your Google Sheets connection.")
+        return
 
-    # Display the map
-    st.plotly_chart(fig, use_container_width=True)
+    # Create and display the competitive map
+    map_html = create_competitive_map(df)
+    st.components.v1.html(map_html, height=650)
 
     # Company details section
     st.subheader("Company Details")
-    selected_company = st.selectbox("Select a company", df['Company'].tolist())
-    
+    selected_company = st.empty()
+
+    # JavaScript to handle company selection
+    st.components.v1.html("""
+    <script>
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'company_selected') {
+            window.parent.postMessage({type: 'update_streamlit', company: event.data.company}, '*');
+        }
+    }, false);
+    </script>
+    """)
+
+    # Handle company selection
     if selected_company:
         company_data = df[df['Company'] == selected_company].iloc[0]
-        create_company_card(company_data)
+        st.write(f"**Description:** {company_data['description']}")
+        st.write(f"**Location:** {company_data['Location']}")
+        st.write(f"**Employees:** {company_data['Employees']}")
+        st.write(f"**Stage:** {company_data['Stage']}")
+        st.write(f"**Website:** {company_data['Website']}")
+        st.write(f"**Investors:** {company_data['Investors']}")
+        st.write(f"**Comments:** {company_data['Comments']}")
+        st.image(company_data['Logo'], width=100)
 
 if __name__ == "__main__":
     main()
