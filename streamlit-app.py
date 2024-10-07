@@ -196,9 +196,19 @@ def main():
     # Initialize session state
     if 'selected_company' not in st.session_state:
         st.session_state.selected_company = None
+    if 'df' not in st.session_state:
+        st.session_state.df = None
 
-    # Fetch data
-    df = fetch_data()
+    # Add a refresh button
+    if st.button("Refresh Data"):
+        st.session_state.df = None  # Clear the cached data
+
+    # Fetch data only if it hasn't been fetched before or refresh button was clicked
+    if st.session_state.df is None:
+        with st.spinner("Fetching data..."):
+            st.session_state.df = fetch_data()
+
+    df = st.session_state.df
 
     if df.empty:
         st.warning("No data available. Please check your Google Sheets connection.")
@@ -208,9 +218,6 @@ def main():
     map_html = create_competitive_map(df)
     st.components.v1.html(map_html, height=650, scrolling=True)
 
-    # Add a hidden component to receive messages from JavaScript
-    selected_company = st.empty()
-
     # Add JavaScript to handle messages
     st.markdown(
         """
@@ -219,10 +226,8 @@ def main():
             if (event.data.type === 'company_selected') {
                 const company = event.data.company;
                 console.log('Received company:', company);
-                const element = window.parent.document.querySelector('iframe[src*="streamlit_component"]');
-                if (element) {
-                    element.contentWindow.postMessage({company: company}, '*');
-                }
+                document.getElementById('selected-company-input').value = company;
+                document.getElementById('update-button').click();
             }
         });
         </script>
@@ -230,10 +235,13 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Check for selected company
-    if selected_company:
-        st.session_state.selected_company = selected_company
-        st.rerun()
+    # Hidden input and button to update selected company
+    selected_company = st.empty()
+    new_selection = selected_company.text_input("Selected Company", key="selected-company-input", label_visibility="hidden")
+    update_button = st.button("Update", key="update-button", style="display: none;")
+
+    if update_button and new_selection != st.session_state.selected_company:
+        st.session_state.selected_company = new_selection
 
     # Company details section
     st.subheader("Company Details")
@@ -266,6 +274,9 @@ def main():
             st.error("The 'Company' column is missing in the data.")
     else:
         st.write("Click on a company logo to see its details.")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
