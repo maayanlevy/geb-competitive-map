@@ -220,7 +220,7 @@ def select_company(company_name):
 
 # Main Streamlit app
 def main():
-    st.title("Competitive Map")
+    st.title("AI Agents Map")
 
     # Initialize session state
     if 'df' not in st.session_state:
@@ -250,7 +250,7 @@ def main():
         non_ignored_companies = df
 
     # Create and display the competitive map
-    st.subheader("Competitive Map")
+    st.subheader("AI Agents Map")
     map_html = create_competitive_map(non_ignored_companies)
     st.components.v1.html(map_html, height=650, scrolling=False)
 
@@ -283,7 +283,7 @@ def main():
 
     # Get the list of companies that are in the map (non-ignored companies)
     company_list = non_ignored_companies['Company'].tolist()
-    company_list = [company for company in company_list if company is not None]
+    company_list = [company for company in company_list if company and not pd.isna(company)]
     
     # Set the default company
     default_company = company_list[0] if company_list else None
@@ -293,9 +293,9 @@ def main():
         st.session_state.selected_company = default_company
 
     # Dropdown to select company
-    st.selectbox("Select a company", options=[''] + sorted(company_list), 
+    st.selectbox("Select a company", options=sorted(company_list), 
                  key="company_dropdown", 
-                 index=company_list.index(st.session_state.selected_company) + 1 if st.session_state.selected_company else 0,
+                 index=company_list.index(st.session_state.selected_company) if st.session_state.selected_company in company_list else 0,
                  on_change=handle_company_selection)
 
     # Company details section
