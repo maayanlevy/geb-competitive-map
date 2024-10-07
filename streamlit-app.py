@@ -161,7 +161,7 @@ def create_competitive_map(df):
         "Enterprise Search": (25, 80),
         "Out of the Box Agents": (5, 80),
         "Vertical AI": (30, 60),
-        "UI Models": (58, 60),
+        "UI Models": (60, 58),
         "Reasoning Models": (60, 75),
         "DIY AI": (65, 30)
     }
