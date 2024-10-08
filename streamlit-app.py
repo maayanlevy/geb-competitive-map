@@ -154,7 +154,7 @@ def create_competitive_map(df):
     sub_labels = [
         ("Multi Tenancy", 50.5, 10),
         ("Multi System", 50.5, 20),
-        ("System Flows", 50.5, 37),
+        ("System Flows", 50.5, 28),
         ("Action Models", 50.5, 63),
         ("Generic Task", 50.5, 90),
         ("Generic Prompts", 10, 51),
