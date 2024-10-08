@@ -160,7 +160,7 @@ def create_competitive_map(df):
         ("Generic Prompts", 10, 51),
         ("User Data", 23, 51),
         ("User Prompts", 33, 51),
-        ("My Tools", 50.5, 51),
+        ("User Tools", 50.5, 51),
         ("Custom Flows", 70, 51),
         ("Organization", 87, 51)
     ]
@@ -170,7 +170,7 @@ def create_competitive_map(df):
     # Add dotted line at 75%
     map_html += """
     <div class="dotted-line" style="left: 83%;"></div>
-    <div class="vertical-label" style="left: 84%; top: 95%;">Automation for anyone that customizes their processes or software stack</div>
+    <div class="vertical-label" style="left: 84%; top: 80%;">Automation for anyone that customizes their processes or software stack</div>
     """
 
     # Calculate bucket sizes based on company count
