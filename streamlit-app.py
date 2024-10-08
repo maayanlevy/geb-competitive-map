@@ -85,7 +85,7 @@ def create_competitive_map(df):
     .sub-label {
         position: absolute;
         font-size: 12px;
-        color: #FFA500;
+        color: #A9A9A9;
     }
     .main-label {
         position: absolute;
