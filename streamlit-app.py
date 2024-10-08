@@ -180,7 +180,7 @@ def create_competitive_map(df):
         "User-Prompted Agents": (25, 30),
         "Enterprise Search": (20, 80),
         "Task-Sepcific Agents": (5, 80),
-        "Vertical AI": (25, 58),
+        "Vertical AI": (25, 56),
         "UI Models": (60, 58),
         "Reasoning Models": (60, 75),
         "DIY AI": (65, 30)
