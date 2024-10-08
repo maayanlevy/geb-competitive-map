@@ -170,7 +170,7 @@ def create_competitive_map(df):
     # Add dotted line at 75%
     map_html += """
     <div class="dotted-line" style="left: 77%;"></div>
-    <div class="vertical-label" style="left: 78%; top: 70.5%;">Customer Side Reasoning</div>
+    <div class="vertical-label" style="left: 78%; top: 65.5%;">Customer Side Reasoning</div>
     """
 
     # Calculate bucket sizes based on company count
