@@ -114,6 +114,20 @@ def create_competitive_map(df):
         height: 0;
         position: absolute;
     }
+    .dotted-line {
+        position: absolute;
+        border-left: 2px dotted #A9A9A9;
+        height: 90%;
+        top: 5%;
+    }
+    .vertical-label {
+        position: absolute;
+        transform: rotate(-90deg);
+        transform-origin: left top;
+        white-space: nowrap;
+        font-size: 12px;
+        color: #A9A9A9;
+    }
     </style>
     <div class="competitive-map">
     """
@@ -145,13 +159,19 @@ def create_competitive_map(df):
         ("Generic Task", 50.5, 90),
         ("Generic Prompts", 10, 51),
         ("My Data", 22, 51),
-        ("Customized Prompts", 32, 51),
-        ("My Tools", 55, 51),
+        ("User Prompts", 32, 51),
+        ("My Tools", 50.5, 51),
         ("Custom Flows", 70, 51),
         ("Organization", 87, 51)
     ]
     for label, x, y in sub_labels:
         map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
+
+    # Add dotted line at 75%
+    map_html += """
+    <div class="dotted-line" style="left: 75%;"></div>
+    <div class="vertical-label" style="left: 76%; top: 95%;">Automation for anyone that customizes their processes or software stack</div>
+    """
 
     # Calculate bucket sizes based on company count
     bucket_counts = df['bucket'].value_counts()
