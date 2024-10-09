@@ -169,8 +169,8 @@ def create_competitive_map(df):
 
     # Add dotted line at 75%
     map_html += """
-    <div class="dotted-line" style="left: 77%;"></div>
-    <div class="vertical-label" style="left: 78%; top: 65.5%;">Customer Side Reasoning</div>
+    <div class="dotted-line" style="left: 75%;"></div>
+    <div class="vertical-label" style="left: 76%; top: 95%;">Automation for anyone that customizes their processes or software stack</div>
     """
 
     # Calculate bucket sizes based on company count
@@ -191,7 +191,7 @@ def create_competitive_map(df):
         
         # Calculate bucket size based on company count
         if company_count > 0:
-            cols = min(4, company_count)  # Changed to 4 columns
+            cols = min(5, company_count)  # Changed to 5 columns
             rows = math.ceil(company_count / cols)
             width = max(cols * 40 + 20, 100)  # 40px per logo, 20px padding
             height = rows * 45 + 40  # 45px per row, 40px padding for label
@@ -207,7 +207,7 @@ def create_competitive_map(df):
         
         bucket_companies = df[df['bucket'] == bucket]
         if company_count > 0:
-            cols = min(4, company_count)  # Changed to 4 columns
+            cols = min(5, company_count)  # Changed to 5 columns
             for i, (_, company) in enumerate(bucket_companies.iterrows()):
                 row = i // cols
                 col = i % cols
