@@ -50,8 +50,8 @@ def create_competitive_map(df):
     }
     .company-logo {
         position: absolute;
-        width: 35px;
-        height: 35px;
+        width: 30px;
+        height: 30px;
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
@@ -208,10 +208,10 @@ def create_competitive_map(df):
         
         # Calculate bucket size based on company count
         if company_count > 0:
-            cols = min(5, company_count)  # Changed to 5 columns
+            cols = min(5, company_count)
             rows = math.ceil(company_count / cols)
-            width = max(cols * 40 + 20, 100)  # 40px per logo, 20px padding
-            height = rows * 45 + 40  # 45px per row, 40px padding for label
+            width = max(cols * 45 + 20, 100)  # Increased from 40 to 45 for more spacing
+            height = rows * 50 + 40  # Increased from 45 to 50 for more spacing
         else:
             # Default size for empty buckets
             width = 100
@@ -224,12 +224,12 @@ def create_competitive_map(df):
         
         bucket_companies = df[df['bucket'] == bucket]
         if company_count > 0:
-            cols = min(5, company_count)  # Changed to 5 columns
+            cols = min(5, company_count)
             for i, (_, company) in enumerate(bucket_companies.iterrows()):
                 row = i // cols
                 col = i % cols
-                x = 10 + (col * 40)
-                y = 30 + (row * 45)
+                x = 10 + (col * 45)  # Increased from 40 to 45 for more spacing
+                y = 30 + (row * 50)  # Increased from 45 to 50 for more spacing
                 company_name = company['Company']
                 logo_url = company['Logo']
                 website_url = company['Website']
