@@ -178,7 +178,7 @@ def create_competitive_map(df):
     for label, x, y in sub_labels:
         map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
 
-    # Add vertical dotted line at 75%
+    # Add vertical dotted line
     map_html += """
     <div class="dotted-line-vertical" style="left: 75%;"></div>
     <div class="vertical-label" style="left: 76%; top: 95%;">Automation for anyone that customizes their processes or software stack</div>
@@ -186,7 +186,7 @@ def create_competitive_map(df):
 
     # Add horizontal dotted line
     map_html += """
-    <div class="dotted-line-horizontal" style="top: 25%;"></div>
+    <div class="dotted-line-horizontal" style="top: 26%;"></div>
     <div class="horizontal-label" style="left: 1%; top: 26%;">System Flows</div>
     """
 
