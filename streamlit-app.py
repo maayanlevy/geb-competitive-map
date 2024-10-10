@@ -173,7 +173,7 @@ def create_competitive_map(df):
         ("User Prompts", 33, 51),
         ("User Tools", 50.5, 51),
         ("Custom Flows", 70, 51),
-        ("Organization", 87, 51)
+        ("Organization", 88, 51)
     ]
     for label, x, y in sub_labels:
         map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
