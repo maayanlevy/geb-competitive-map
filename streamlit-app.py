@@ -181,7 +181,7 @@ def create_competitive_map(df):
     # Add vertical dotted line
     map_html += """
     <div class="dotted-line-vertical" style="left: 75%;"></div>
-    <div class="vertical-label" style="left: 76%; top: 95%;">Automation for anyone that customizes their processes or software stack</div>
+    <div class="vertical-label" style="left: 76%; top: 61%;">Customized Customer Processes</div>
     """
 
     # Add horizontal dotted line
