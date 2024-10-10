@@ -44,7 +44,7 @@ def create_competitive_map(df):
     .competitive-map {
         position: relative;
         width: 100%;
-        height: 600px;
+        height: 800px;
         background-color: #ffffff;
         font-family: Arial, sans-serif;
     }
