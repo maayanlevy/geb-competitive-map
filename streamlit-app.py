@@ -114,16 +114,27 @@ def create_competitive_map(df):
         height: 0;
         position: absolute;
     }
-    .dotted-line {
+    .dotted-line-vertical {
         position: absolute;
         border-left: 2px dotted #A9A9A9;
         height: 90%;
         top: 5%;
     }
+    .dotted-line-horizontal {
+        position: absolute;
+        border-top: 2px dotted #A9A9A9;
+        width: 100%;
+    }
     .vertical-label {
         position: absolute;
         transform: rotate(-90deg);
         transform-origin: left top;
+        white-space: nowrap;
+        font-size: 12px;
+        color: #A9A9A9;
+    }
+    .horizontal-label {
+        position: absolute;
         white-space: nowrap;
         font-size: 12px;
         color: #A9A9A9;
@@ -167,10 +178,16 @@ def create_competitive_map(df):
     for label, x, y in sub_labels:
         map_html += f'<div class="sub-label" style="left: {x}%; top: {y}%;">{label}</div>'
 
-    # Add dotted line at 75%
+    # Add vertical dotted line at 75%
     map_html += """
-    <div class="dotted-line" style="left: 75%;"></div>
-    <div class="vertical-label" style="left: 76%; top: 61%;">Customized Customer Processes</div>
+    <div class="dotted-line-vertical" style="left: 75%;"></div>
+    <div class="vertical-label" style="left: 76%; top: 95%;">Automation for anyone that customizes their processes or software stack</div>
+    """
+
+    # Add horizontal dotted line
+    map_html += """
+    <div class="dotted-line-horizontal" style="top: 33%;"></div>
+    <div class="horizontal-label" style="left: 1%; top: 34%;">System Flows</div>
     """
 
     # Calculate bucket sizes based on company count
